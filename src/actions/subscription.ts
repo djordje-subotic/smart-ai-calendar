@@ -3,12 +3,12 @@
 import { createClient } from "@/src/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export type Plan = "free" | "pro" | "team";
+export type Plan = "free" | "pro" | "ultra";
 
 const PLAN_DETAILS: Record<Plan, { name: string; price: number }> = {
   free: { name: "Free", price: 0 },
-  pro: { name: "Pro", price: 7 },
-  team: { name: "Team", price: 12 },
+  pro: { name: "Pro", price: 9 },
+  ultra: { name: "Ultra", price: 19 },
 };
 
 export async function getCurrentPlan(): Promise<{ plan: Plan; name: string; price: number } | null> {
@@ -16,12 +16,7 @@ export async function getCurrentPlan(): Promise<{ plan: Plan; name: string; pric
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("plan")
-    .eq("id", user.id)
-    .single();
-
+  const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
   const plan = (data?.plan || "free") as Plan;
   return { plan, ...PLAN_DETAILS[plan] };
 }
@@ -31,11 +26,7 @@ export async function changePlan(newPlan: Plan): Promise<{ success: boolean; err
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ plan: newPlan })
-    .eq("id", user.id);
-
+  const { error } = await supabase.from("profiles").update({ plan: newPlan }).eq("id", user.id);
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/settings");

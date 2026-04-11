@@ -145,3 +145,27 @@ export function formatTimeRange(startTime: string, endTime: string): string {
 export function createDateAtTime(date: Date, hours: number, minutes = 0): Date {
   return setMinutes(setHours(date, hours), minutes);
 }
+
+export function getRecurrenceLabel(rule: { freq: string; interval?: number; days?: string[] } | null): string | null {
+  if (!rule) return null;
+  const dayNames: Record<string, string> = { MO: "Mon", TU: "Tue", WE: "Wed", TH: "Thu", FR: "Fri", SA: "Sat", SU: "Sun" };
+
+  if (rule.freq === "daily") {
+    return rule.interval && rule.interval > 1 ? `Every ${rule.interval} days` : "Every day";
+  }
+  if (rule.freq === "weekly") {
+    if (rule.days?.length) {
+      const dayLabels = rule.days.map((d) => dayNames[d] || d).join(", ");
+      return `Every ${dayLabels}`;
+    }
+    return rule.interval && rule.interval > 1 ? `Every ${rule.interval} weeks` : "Every week";
+  }
+  if (rule.freq === "monthly") return "Every month";
+  if (rule.freq === "yearly") return "Every year";
+  return null;
+}
+
+export function getTasksForDay(tasks: Array<{ due_date: string | null; due_time: string | null; status: string }>, day: Date) {
+  const dayStr = format(day, "yyyy-MM-dd");
+  return tasks.filter((t) => t.due_date === dayStr && t.status !== "done");
+}

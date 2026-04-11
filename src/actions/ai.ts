@@ -5,7 +5,7 @@ import { buildSystemPrompt, buildOptimizePrompt } from "@/src/lib/ai/prompts";
 import { ParsedEventSchema } from "@/src/lib/ai/schemas";
 import { createClient } from "@/src/lib/supabase/server";
 
-const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 500, team: 2000 };
+const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 300, ultra: 3000 };
 
 async function checkAndTrackUsage(action: string, tokensUsed: number) {
   const supabase = await createClient();
@@ -115,6 +115,13 @@ LANGUAGE SUPPORT (Serbian + English):
 - danas=today, sutra=tomorrow, svaki=every, dan=day, od=from, do=to/until
 - nedelja=week, mesec=month, ponedeljak=monday, utorak=tuesday, sreda=wednesday
 - cetvrtak=thursday, petak=friday, subota=saturday, nedelja=sunday
+- ujutru=morning, uvece=evening, popodne=afternoon
+
+TIME INTERPRETATION (CRITICAL):
+- Use EXACTLY the number the user says. "u 7" = 07:00, "u 7:30" = 07:30. NEVER add +1 hour or shift the time.
+- If the time has already passed today, intelligently use PM: "u 7" at 15:00 = 19:00
+- Numbers >= 13 are always 24h format: "u 14" = 14:00, "u 20" = 20:00
+- "ujutru" = morning, "uvece" = evening, "popodne" = afternoon
 
 RULES FOR EVENTS:
 - ALWAYS include start_time and end_time as ISO 8601 with timezone
@@ -301,5 +308,77 @@ export async function optimizeSchedule(userRequest: string, startDate: string, e
     return { ...parsed, usage: { used: usage.creditsUsed, limit: usage.limit } };
   } catch {
     return { analysis: text, score: 50, suggestions: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
+  }
+}
+
+// --- REPLAN MY DAY (1 AI credit) ---
+export interface ReplanResult {
+  message: string;
+  moves: Array<{ event_title: string; from: string; to: string; reason: string }>;
+  adds: Array<{ title: string; time: string; reason: string }>;
+  removes: Array<{ event_title: string; reason: string }>;
+  usage?: { used: number; limit: number };
+}
+
+export async function replanDay(
+  reason: string = "I need to reorganize my day",
+  timezone: string = "Europe/Belgrade"
+): Promise<ReplanResult> {
+  const client = getClient();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const today = new Date();
+  const now = new Date().toLocaleString("en-US", { timeZone: timezone });
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+
+  const { data: events } = await supabase.from("events")
+    .select("title, start_time, end_time, location, status")
+    .gte("start_time", startOfDay).lte("start_time", endOfDay).order("start_time");
+
+  const { data: tasks } = await supabase.from("tasks")
+    .select("title, due_date, due_time, priority, status")
+    .eq("due_date", today.toISOString().split("T")[0]).neq("status", "done");
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 512,
+    messages: [{
+      role: "user",
+      content: `You are Kron, a personal time manager. Current time: ${now}. The user wants to replan their day.
+
+Reason: "${reason}"
+
+Today's events: ${JSON.stringify(events || [])}
+Today's remaining tasks: ${JSON.stringify(tasks || [])}
+
+Analyze what's left in the day (skip events that already passed) and suggest a better arrangement.
+Consider: energy levels, breaks, task priorities, realistic timing.
+
+Respond with ONLY this JSON:
+{
+  "message": "Brief friendly summary of what you changed and why (1-2 sentences)",
+  "moves": [{"event_title":"...", "from":"HH:mm", "to":"HH:mm", "reason":"..."}],
+  "adds": [{"title":"...", "time":"HH:mm", "reason":"..."}],
+  "removes": [{"event_title":"...", "reason":"..."}]
+}
+Empty arrays if no changes needed.`,
+    }],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+  const totalTokens = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
+  const usage = await checkAndTrackUsage("replan_day", totalTokens);
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return { message: text, moves: [], adds: [], removes: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    return { ...parsed, usage: { used: usage.creditsUsed, limit: usage.limit } };
+  } catch {
+    return { message: text, moves: [], adds: [], removes: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
   }
 }

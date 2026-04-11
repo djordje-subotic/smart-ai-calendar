@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useVoice } from "@/src/hooks/useVoice";
+import { playSound } from "@/src/lib/sounds";
+import Link from "next/link";
 import {
   Sparkles,
   Send,
@@ -13,6 +16,8 @@ import {
   Clock,
   RotateCcw,
   Mic,
+  MicOff,
+  Crown,
 } from "lucide-react";
 import { parseEventPrompt } from "@/src/actions/ai";
 import { useCreateEvent } from "@/src/hooks/useEvents";
@@ -31,13 +36,20 @@ export function AIInputBar({ events }: AIInputBarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<ParsedEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [usageInfo, setUsageInfo] = useState<{ used: number; limit: number } | null>(null);
   const createEvent = useCreateEvent();
+
+  const handleVoiceResult = useCallback((text: string) => {
+    setInput((prev) => (prev ? prev + " " + text : text));
+  }, []);
+  const { isListening, toggle: toggleVoice } = useVoice(handleVoiceResult);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim()) return;
 
+    playSound("send");
     setIsLoading(true);
     setError(null);
     setSuggestion(null);
@@ -48,8 +60,10 @@ export function AIInputBar({ events }: AIInputBarProps) {
       setSuggestion(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      if (message.includes("ANTHROPIC_API_KEY")) {
-        setError("AI not configured. Add ANTHROPIC_API_KEY to .env.local and restart.");
+      if (message.includes("limit reached") || message.includes("Upgrade")) {
+        setShowUpgrade(true);
+      } else if (message.includes("ANTHROPIC_API_KEY")) {
+        setError("AI not configured.");
       } else {
         setError(`AI error: ${message}`);
       }
@@ -83,6 +97,7 @@ export function AIInputBar({ events }: AIInputBarProps) {
         status: "confirmed",
       });
 
+      playSound("success");
       setSuggestion(null);
       setInput("");
     } catch (err) {
@@ -178,6 +193,38 @@ export function AIInputBar({ events }: AIInputBarProps) {
         )}
       </AnimatePresence>
 
+      {/* Upgrade prompt */}
+      <AnimatePresence>
+        {showUpgrade && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mx-3 mt-3 rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-primary">
+                <Crown className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">You've hit your AI limit</p>
+                <p className="text-[11px] text-muted-foreground">Upgrade to Pro for 300 requests/mo, or Ultra for unlimited.</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setShowUpgrade(false)} className="text-muted-foreground/40 hover:text-muted-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+                <Link href="/settings">
+                  <Button size="sm" className="gradient-primary border-0 text-primary-foreground text-xs">
+                    Upgrade
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Error */}
       <AnimatePresence>
         {error && (
@@ -217,14 +264,27 @@ export function AIInputBar({ events }: AIInputBarProps) {
             </div>
           )}
         </div>
-        <Button
+        <button
           type="button"
-          size="icon"
-          variant="ghost"
-          className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
+          onClick={() => { playSound("toggle"); toggleVoice(); }}
+          className={`relative h-10 w-10 shrink-0 rounded-lg flex items-center justify-center transition-all ${
+            isListening
+              ? "bg-red-500/15 border border-red-500/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          }`}
         >
-          <Mic className="h-4 w-4" />
-        </Button>
+          {isListening ? (
+            <div className="flex items-center gap-[3px] h-5">
+              <div className="w-[3px] rounded-full bg-red-400 sound-bar-1" />
+              <div className="w-[3px] rounded-full bg-red-400 sound-bar-2" />
+              <div className="w-[3px] rounded-full bg-red-400 sound-bar-3" />
+              <div className="w-[3px] rounded-full bg-red-400 sound-bar-4" />
+              <div className="w-[3px] rounded-full bg-red-400 sound-bar-5" />
+            </div>
+          ) : (
+            <Mic className="h-4 w-4" />
+          )}
+        </button>
         <Button
           type="submit"
           size="icon"

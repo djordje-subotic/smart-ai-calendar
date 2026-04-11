@@ -8,19 +8,23 @@ import {
   isToday,
   getMonthDays,
   getEventsForDay,
+  getTasksForDay,
 } from "@/src/lib/calendar/utils";
 import { CalendarEvent } from "@/src/types/event";
+import { Task } from "@/src/types/task";
 import { cn } from "@/lib/utils";
 import { EventCard } from "./EventCard";
+import { TaskCardInline } from "@/src/components/tasks/TaskCardInline";
 import { motion } from "framer-motion";
 
 const dayHeaders = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface CalendarGridProps {
   events: CalendarEvent[];
+  tasks?: Task[];
 }
 
-export function CalendarGrid({ events }: CalendarGridProps) {
+export function CalendarGrid({ events, tasks = [] }: CalendarGridProps) {
   const { selectedDate, setSelectedDate, setView } = useCalendarStore();
   const days = getMonthDays(selectedDate);
   const weeks = Math.ceil(days.length / 7);
@@ -52,6 +56,7 @@ export function CalendarGrid({ events }: CalendarGridProps) {
       >
         {days.map((day) => {
           const dayEvents = getEventsForDay(events, day);
+          const dayTasks = getTasksForDay(tasks, day) as Task[];
           const isCurrentMonth = isSameMonth(day, selectedDate);
           const today = isToday(day);
           const selected = isSameDay(day, selectedDate);
@@ -88,14 +93,17 @@ export function CalendarGrid({ events }: CalendarGridProps) {
                 )}
               </div>
 
-              {/* Events */}
+              {/* Events + Tasks */}
               <div className="space-y-0.5">
-                {dayEvents.slice(0, 3).map((event) => (
+                {dayEvents.slice(0, 2).map((event) => (
                   <EventCard key={event.id} event={event} compact />
                 ))}
-                {dayEvents.length > 3 && (
+                {dayTasks.slice(0, 2).map((task) => (
+                  <TaskCardInline key={task.id} task={task} compact />
+                ))}
+                {(dayEvents.length + dayTasks.length) > 3 && (
                   <span className="block text-[10px] font-medium text-muted-foreground pl-1">
-                    +{dayEvents.length - 3} more
+                    +{dayEvents.length + dayTasks.length - 3} more
                   </span>
                 )}
               </div>

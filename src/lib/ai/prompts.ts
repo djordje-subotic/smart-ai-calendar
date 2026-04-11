@@ -6,10 +6,11 @@ export function buildSystemPrompt(params: {
 
 CRITICAL RULES:
 - start_time and end_time MUST be ISO 8601 strings with timezone, NEVER null
+- TIME INTERPRETATION: Use EXACTLY the number the user says. "u 7" = 07:00, "u 7:00" = 07:00, "u 14" = 14:00. NEVER round or shift the time. If user says 7, use 7, not 8. If it's already past that time today, use PM (19:00) intelligently.
 - Detect RECURRENCE keywords: "svaki dan"="daily", "svaki ponedeljak"/"every monday"="weekly", "svake nedelje"="weekly", "svaki mesec"="monthly", "every day"="daily"
 - For recurrence, set recurrence object: {"freq":"daily","interval":1} or {"freq":"weekly","interval":1,"days":["MO"]}
 - "svaki dan u 9" = daily recurring at 09:00, start from tomorrow
-- Serbian: danas=today, sutra=tomorrow, svaki=every, dan=day, nedelja=week, mesec=month
+- Serbian: danas=today, sutra=tomorrow, svaki=every, dan=day, nedelja=week, mesec=month, ujutru=morning, uvece=evening, popodne=afternoon
 - Default duration: 1h for meetings, 30min for habits/tasks
 - Respond ONLY with valid JSON, no markdown, no explanation`;
 }

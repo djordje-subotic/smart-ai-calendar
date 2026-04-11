@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Send, Loader2, Check, X, Clock, MapPin, RotateCcw, MessageSquare, Trash, Circle, Flag } from "lucide-react";
+import { playSound } from "@/src/lib/sounds";
 import { chatWithAI, type ChatMessage, type ChatResponse } from "@/src/actions/ai";
 import { createEvent } from "@/src/actions/events";
 import { createTask } from "@/src/actions/tasks";
@@ -27,12 +28,39 @@ export function AskAIDialog() {
   const { isCommandPaletteOpen, setCommandPaletteOpen } = useUIStore();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<DisplayMessage[]>([]);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<DisplayMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("kron-chat-messages");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("kron-chat-history");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [usageInfo, setUsageInfo] = useState<{ used: number; limit: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // Persist chat to localStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("kron-chat-messages", JSON.stringify(messages.map((m) => ({
+        role: m.role, content: m.content, events: m.events, tasks: m.tasks,
+      }))));
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (chatHistory.length > 0) {
+      localStorage.setItem("kron-chat-history", JSON.stringify(chatHistory));
+    }
+  }, [chatHistory]);
 
   useEffect(() => {
     if (isCommandPaletteOpen) setTimeout(() => inputRef.current?.focus(), 100);
@@ -56,6 +84,8 @@ export function AskAIDialog() {
   function handleClear() {
     setMessages([]);
     setChatHistory([]);
+    localStorage.removeItem("kron-chat-messages");
+    localStorage.removeItem("kron-chat-history");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,6 +95,7 @@ export function AskAIDialog() {
     const userMsg = input.trim();
     setInput("");
     setLoading(true);
+    playSound("send");
 
     const newMessages = [...messages, { role: "user" as const, content: userMsg }];
     setMessages(newMessages);
@@ -87,7 +118,15 @@ export function AskAIDialog() {
       setMessages([...newMessages, assistantMsg]);
       setChatHistory([...newHistory, { role: "assistant", content: result.message }]);
     } catch (err) {
-      setMessages([...newMessages, { role: "assistant", content: `Error: ${err instanceof Error ? err.message : String(err)}` }]);
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("limit reached") || msg.includes("Upgrade")) {
+        setMessages([...newMessages, {
+          role: "assistant",
+          content: "You've reached your monthly AI limit. Upgrade your plan in Settings to continue using Kron AI.",
+        }]);
+      } else {
+        setMessages([...newMessages, { role: "assistant", content: `Error: ${msg}` }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -121,7 +160,11 @@ export function AskAIDialog() {
       }));
 
       queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch { /* */ }
+      playSound("success");
+    } catch (err) {
+      playSound("error");
+      console.error("Failed to add event:", err);
+    }
   }
 
   async function handleAddTask(msgIdx: number, taskIdx: number, task: NonNullable<ChatResponse["tasks"]>[number]) {
@@ -144,7 +187,9 @@ export function AskAIDialog() {
         }
         return m;
       }));
-    } catch { /* */ }
+    } catch (err) {
+      console.error("Failed to add task:", err);
+    }
   }
 
   async function handleAddAll(msgIdx: number, msg: DisplayMessage) {

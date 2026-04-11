@@ -14,6 +14,8 @@ import {
   subDays,
 } from "@/src/lib/calendar/utils";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { NotificationBell } from "@/src/components/social/NotificationBell";
+import { HeyKronIndicator } from "@/src/components/ai/HeyKronIndicator";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -124,6 +126,9 @@ export function Header() {
             </button>
           ))}
         </div>
+
+        <HeyKronIndicator />
+        <NotificationBell />
 
         {/* New Event */}
         <Button

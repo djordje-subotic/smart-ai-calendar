@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getTasks, createTask, updateTaskStatus, deleteTask } from "@/src/actions/tasks";
 import { Task } from "@/src/types/task";
+import { playSound } from "@/src/lib/sounds";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Check, Circle, Flag, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -37,6 +38,7 @@ export function TaskPanel() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newTitle.trim()) return;
+    playSound("success");
     await createTask({
       title: newTitle.trim(),
       description: null,
@@ -52,12 +54,14 @@ export function TaskPanel() {
   }
 
   async function handleToggle(task: Task) {
+    playSound("complete");
     const newStatus = task.status === "done" ? "todo" : "done";
     await updateTaskStatus(task.id, newStatus);
     await loadTasks();
   }
 
   async function handleDelete(id: string) {
+    playSound("delete");
     await deleteTask(id);
     await loadTasks();
   }

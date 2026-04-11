@@ -27,7 +27,7 @@ const RECURRENCE_OPTIONS = [
 ];
 
 export function EventModal({ events }: EventModalProps) {
-  const { isEventModalOpen, editingEventId, closeEventModal } = useUIStore();
+  const { isEventModalOpen, editingEventId, prefillStartTime, prefillEndTime, closeEventModal } = useUIStore();
   const { selectedDate } = useCalendarStore();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
@@ -59,8 +59,8 @@ export function EventModal({ events }: EventModalProps) {
       setDescription("");
       setLocation("");
       setDate(format(selectedDate, "yyyy-MM-dd"));
-      setStartTime("09:00");
-      setEndTime("10:00");
+      setStartTime(prefillStartTime || "09:00");
+      setEndTime(prefillEndTime || "10:00");
       setColor(DEFAULT_EVENT_COLOR);
       setRecurrence("none");
     }

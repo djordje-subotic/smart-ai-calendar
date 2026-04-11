@@ -61,13 +61,17 @@ export async function getCompletions(habitId: string, month: string): Promise<Ha
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
+  // Calculate last day of month properly
+  const [year, mon] = month.split("-").map(Number);
+  const lastDay = new Date(year, mon, 0).getDate(); // 0th day of next month = last day of this month
+
   const { data } = await supabase
     .from("habit_completions")
     .select("*")
     .eq("habit_id", habitId)
     .eq("user_id", user.id)
     .gte("completed_date", `${month}-01`)
-    .lte("completed_date", `${month}-31`);
+    .lte("completed_date", `${month}-${lastDay}`);
 
   return (data || []) as HabitCompletion[];
 }
@@ -96,7 +100,6 @@ export async function toggleCompletion(habitId: string, date: string): Promise<b
   if (existing) {
     await supabase.from("habit_completions").delete().eq("id", existing.id);
     await updateStreak(supabase, habitId);
-    revalidatePath("/habits");
     return false;
   } else {
     await supabase.from("habit_completions").insert({
@@ -105,7 +108,6 @@ export async function toggleCompletion(habitId: string, date: string): Promise<b
       completed_date: date,
     });
     await updateStreak(supabase, habitId);
-    revalidatePath("/habits");
     return true;
   }
 }
@@ -115,24 +117,31 @@ async function updateStreak(supabase: any, habitId: string) {
     .from("habit_completions")
     .select("completed_date")
     .eq("habit_id", habitId)
-    .order("completed_date", { ascending: false });
+    .order("completed_date", { ascending: false })
+    .limit(365);
 
   if (!completions || completions.length === 0) {
     await supabase.from("habits").update({ streak_current: 0 }).eq("id", habitId);
     return;
   }
 
+  // Convert dates to simple YYYY-MM-DD strings for comparison (timezone safe)
+  const todayStr = new Date().toISOString().split("T")[0];
+  const completedDates = completions.map((c: any) => c.completed_date);
+
   let streak = 0;
-  const today = new Date();
-  let checkDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let checkDate = new Date(todayStr + "T12:00:00Z"); // Use noon to avoid DST issues
 
-  for (const c of completions) {
-    const completedDate = new Date(c.completed_date + "T00:00:00");
-    const diff = Math.round((checkDate.getTime() - completedDate.getTime()) / 86400000);
-
-    if (diff <= 1) {
+  for (let i = 0; i < 365; i++) {
+    const dateStr = checkDate.toISOString().split("T")[0];
+    if (completedDates.includes(dateStr)) {
       streak++;
-      checkDate = completedDate;
+      // Move to previous day
+      checkDate = new Date(checkDate.getTime() - 86400000);
+    } else if (i === 0) {
+      // Today not completed yet - still check yesterday
+      checkDate = new Date(checkDate.getTime() - 86400000);
+      continue;
     } else {
       break;
     }

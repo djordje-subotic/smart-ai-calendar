@@ -19,6 +19,7 @@ import { ScheduleScore } from "@/src/components/calendar/ScheduleScore";
 import { UpcomingEvents } from "@/src/components/calendar/UpcomingEvents";
 import { EnergyIndicator, EnergyTimeline } from "@/src/components/calendar/EnergyIndicator";
 import { TaskPanel } from "@/src/components/tasks/TaskPanel";
+import { InvitePanel } from "@/src/components/social/InvitePanel";
 import { Logo } from "./Logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCalendarStore } from "@/src/stores/calendarStore";
@@ -80,6 +81,7 @@ export function Sidebar() {
               <ScheduleScore events={events} date={selectedDate} />
               <EnergyTimeline />
               <UpcomingEvents events={events} date={selectedDate} />
+              <InvitePanel />
               <TaskPanel />
             </motion.div>
           )}

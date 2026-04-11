@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Kron",
+    "slug": "kron-calendar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "scheme": "kron",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1520"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kron.calendar"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1520"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.kron.calendar"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
