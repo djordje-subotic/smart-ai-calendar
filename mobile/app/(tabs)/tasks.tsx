@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from "r
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabase";
 import { colors } from "../../src/constants/colors";
+import { SwipeableRow } from "../../src/components/SwipeableRow";
+import { getCached, setCached } from "../../src/lib/offlineCache";
 
 interface Task {
   id: string;
@@ -23,8 +25,16 @@ export default function TasksScreen() {
   useEffect(() => { loadTasks(); }, []);
 
   async function loadTasks() {
-    const { data } = await supabase.from("tasks").select("*").neq("status", "done").order("due_date");
-    setTasks(data || []);
+    const cached = await getCached<Task[]>("tasks:open");
+    if (cached) setTasks(cached);
+    try {
+      const { data } = await supabase.from("tasks").select("*").neq("status", "done").order("due_date");
+      const fresh = data || [];
+      setTasks(fresh);
+      await setCached("tasks:open", fresh, { ttl: 6 * 60 * 60 * 1000 });
+    } catch {
+      // Offline — keep cached
+    }
   }
 
   async function handleAdd() {
@@ -39,13 +49,24 @@ export default function TasksScreen() {
   }
 
   async function handleToggle(id: string) {
-    await supabase.from("tasks").update({ status: "done" }).eq("id", id);
-    await loadTasks();
+    // Optimistic: remove from list immediately
+    const prev = tasks;
+    setTasks(tasks.filter((t) => t.id !== id));
+    const { error } = await supabase.from("tasks").update({ status: "done" }).eq("id", id);
+    if (error) {
+      // Revert on error
+      setTasks(prev);
+    }
   }
 
   async function handleDelete(id: string) {
-    await supabase.from("tasks").delete().eq("id", id);
-    await loadTasks();
+    // Optimistic removal
+    const prev = tasks;
+    setTasks(tasks.filter((t) => t.id !== id));
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) {
+      setTasks(prev);
+    }
   }
 
   return (
@@ -89,20 +110,26 @@ export default function TasksScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={styles.taskCard}>
-            <TouchableOpacity style={[styles.checkbox, { borderColor: item.color }]} onPress={() => handleToggle(item.id)}>
-              {item.status === "done" && <View style={[styles.checkInner, { backgroundColor: item.color }]} />}
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.taskTitle}>{item.title}</Text>
-              {item.due_time && <Text style={styles.taskTime}>{item.due_time}</Text>}
-            </View>
-            <Text style={[styles.priorityBadge, { color: PRIORITY_COLORS[item.priority] || colors.muted }]}>
-              {item.priority === "urgent" ? "!!" : item.priority === "high" ? "!" : ""}
-            </Text>
-            <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Text style={styles.deleteBtn}>×</Text>
-            </TouchableOpacity>
+          <View style={{ marginBottom: 8 }}>
+            <SwipeableRow
+              onComplete={() => handleToggle(item.id)}
+              onDelete={() => handleDelete(item.id)}
+              completeLabel="Done"
+              deleteLabel="Delete"
+            >
+              <View style={styles.taskCard}>
+                <TouchableOpacity style={[styles.checkbox, { borderColor: item.color }]} onPress={() => handleToggle(item.id)}>
+                  {item.status === "done" && <View style={[styles.checkInner, { backgroundColor: item.color }]} />}
+                </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.taskTitle}>{item.title}</Text>
+                  {item.due_time && <Text style={styles.taskTime}>{item.due_time}</Text>}
+                </View>
+                <Text style={[styles.priorityBadge, { color: PRIORITY_COLORS[item.priority] || colors.muted }]}>
+                  {item.priority === "urgent" ? "!!" : item.priority === "high" ? "!" : ""}
+                </Text>
+              </View>
+            </SwipeableRow>
           </View>
         )}
       />
@@ -124,7 +151,7 @@ const styles = StyleSheet.create({
   empty: { alignItems: "center", paddingTop: 60 },
   emptyTitle: { fontSize: 16, fontWeight: "600", color: colors.foreground },
   emptyText: { fontSize: 13, color: colors.muted, marginTop: 4 },
-  taskCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: colors.card, borderRadius: 14, padding: 14, marginBottom: 8 },
+  taskCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: colors.card, borderRadius: 14, padding: 14 },
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, justifyContent: "center", alignItems: "center" },
   checkInner: { width: 12, height: 12, borderRadius: 3 },
   taskTitle: { fontSize: 14, fontWeight: "500", color: colors.foreground },

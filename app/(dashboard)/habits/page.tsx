@@ -117,7 +117,7 @@ export default function HabitsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-6 space-y-6 overflow-auto h-full">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 space-y-4 sm:space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Habits</h2>

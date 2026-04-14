@@ -7,8 +7,8 @@ export type Plan = "free" | "pro" | "ultra";
 
 const PLAN_DETAILS: Record<Plan, { name: string; price: number }> = {
   free: { name: "Free", price: 0 },
-  pro: { name: "Pro", price: 9 },
-  ultra: { name: "Ultra", price: 19 },
+  pro: { name: "Pro", price: 9.99 },
+  ultra: { name: "Ultra", price: 19.99 },
 };
 
 export async function getCurrentPlan(): Promise<{ plan: Plan; name: string; price: number } | null> {

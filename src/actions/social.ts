@@ -81,7 +81,21 @@ export async function respondToFriendRequest(friendshipId: string, accept: boole
   revalidatePath("/settings");
 }
 
-export async function getFriends(): Promise<Array<{ id: string; friendshipId: string; name: string; email?: string; status: string }>> {
+export interface FriendProfile {
+  id: string;
+  friendshipId: string;
+  name: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  avatar_preset: string | null;
+  city: string | null;
+  date_of_birth: string | null;
+  occupation: string | null;
+  motto: string | null;
+  status: string;
+}
+
+export async function getFriends(): Promise<FriendProfile[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -94,14 +108,23 @@ export async function getFriends(): Promise<Array<{ id: string; friendshipId: st
 
   if (!friendships) return [];
 
-  const friends = [];
+  const friends: FriendProfile[] = [];
   for (const f of friendships) {
     const friendId = f.user_id === user.id ? f.friend_id : f.user_id;
-    const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", friendId).single();
+    const { data: profile } = await supabase.from("profiles")
+      .select("full_name, display_name, avatar_url, avatar_preset, city, date_of_birth, occupation, motto")
+      .eq("id", friendId).single();
     friends.push({
       id: friendId,
       friendshipId: f.id,
       name: profile?.full_name || "User",
+      display_name: profile?.display_name || null,
+      avatar_url: profile?.avatar_url || null,
+      avatar_preset: profile?.avatar_preset || null,
+      city: profile?.city || null,
+      date_of_birth: profile?.date_of_birth || null,
+      occupation: profile?.occupation || null,
+      motto: profile?.motto || null,
       status: f.status,
     });
   }
@@ -211,10 +234,12 @@ export async function respondToInvite(inviteId: string, action: "accept" | "decl
       reminder_minutes: [15],
     };
 
-    // Create for organizer
-    await supabase.from("events").insert({ ...eventBase, user_id: invite.organizer_id });
-    // Create for invitee
-    await supabase.from("events").insert({ ...eventBase, user_id: invite.invitee_id });
+    // Create for both users
+    const { error: orgErr } = await supabase.from("events").insert({ ...eventBase, user_id: invite.organizer_id });
+    const { error: invErr } = await supabase.from("events").insert({ ...eventBase, user_id: invite.invitee_id });
+    if (orgErr || invErr) {
+      return { success: false, error: "Failed to create events for both users" };
+    }
 
     await supabase.from("event_invites").update({
       status: "accepted",
@@ -286,14 +311,17 @@ export async function getMyInvites(): Promise<any[]> {
 
   if (!data) return [];
 
-  // Enrich with names
+  // Enrich with names and timezone
+  const { data: myProfile } = await supabase.from("profiles").select("timezone").eq("id", user.id).single();
   const enriched = [];
   for (const inv of data) {
     const otherId = inv.organizer_id === user.id ? inv.invitee_id : inv.organizer_id;
-    const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", otherId).single();
+    const { data: profile } = await supabase.from("profiles").select("full_name, timezone").eq("id", otherId).single();
     enriched.push({
       ...inv,
       otherName: profile?.full_name || "User",
+      otherTimezone: profile?.timezone || "Europe/Belgrade",
+      myTimezone: myProfile?.timezone || "Europe/Belgrade",
       isOrganizer: inv.organizer_id === user.id,
     });
   }

@@ -4,7 +4,7 @@ import { CalendarEvent } from "@/src/types/event";
 import { formatTimeRange, parseISO, getRecurrenceLabel } from "@/src/lib/calendar/utils";
 import { useUIStore } from "@/src/stores/uiStore";
 import { cn } from "@/lib/utils";
-import { MapPin, Sparkles, RotateCcw } from "lucide-react";
+import { MapPin, Sparkles, RotateCcw, Video } from "lucide-react";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -63,6 +63,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
               {formatTimeRange(event.start_time, event.end_time)}
             </span>
             {recurrenceLabel && <RotateCcw className="h-2.5 w-2.5 shrink-0 text-muted-foreground/40" />}
+            {event.meeting_url && <Video className="h-2.5 w-2.5 shrink-0 text-primary/60" />}
           </div>
         ) : (
           <div className="flex flex-col gap-0.5">
@@ -84,6 +85,18 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                 <MapPin className="h-2.5 w-2.5" />
                 <span className="truncate">{event.location}</span>
               </div>
+            )}
+            {event.meeting_url && (
+              <a
+                href={event.meeting_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 mt-0.5 rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/20 transition-colors w-fit"
+              >
+                <Video className="h-2.5 w-2.5" />
+                Join
+              </a>
             )}
           </div>
         )}

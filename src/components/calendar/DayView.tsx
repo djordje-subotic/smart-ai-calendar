@@ -279,7 +279,7 @@ export function DayView({ events, tasks = [] }: DayViewProps) {
           {laidOut.map(({ event, col, totalCols }, i) => {
             const isDragging = dragging?.eventId === event.id;
             const pos = getEventPosition(event);
-            const top = isDragging ? dragging!.currentTop : pos.top;
+            const top = isDragging && dragging ? dragging.currentTop : pos.top;
             const width = `${(1 / totalCols) * 100 - 1}%`;
             const left = `${(col / totalCols) * 100}%`;
 

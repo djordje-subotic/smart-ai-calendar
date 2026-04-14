@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Users,
+  Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,9 +19,9 @@ import { useUIStore } from "@/src/stores/uiStore";
 import { MiniCalendar } from "@/src/components/calendar/MiniCalendar";
 import { ScheduleScore } from "@/src/components/calendar/ScheduleScore";
 import { UpcomingEvents } from "@/src/components/calendar/UpcomingEvents";
-import { EnergyIndicator, EnergyTimeline } from "@/src/components/calendar/EnergyIndicator";
 import { TaskPanel } from "@/src/components/tasks/TaskPanel";
 import { InvitePanel } from "@/src/components/social/InvitePanel";
+import { ProfilePanel } from "@/src/components/profile/ProfilePanel";
 import { Logo } from "./Logo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCalendarStore } from "@/src/stores/calendarStore";
@@ -29,6 +31,8 @@ const navItems = [
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/today", label: "Today", icon: Sun },
   { href: "/habits", label: "Habits", icon: Target },
+  { href: "/tools", label: "AI Tools", icon: Wand2 },
+  { href: "/friends", label: "Friends", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -74,12 +78,11 @@ export function Sidebar() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden px-3 space-y-3 pb-2"
             >
+              <ProfilePanel />
               <div className="rounded-xl border border-border/50 bg-card/50 p-3">
                 <MiniCalendar />
               </div>
-              <EnergyIndicator />
               <ScheduleScore events={events} date={selectedDate} />
-              <EnergyTimeline />
               <UpcomingEvents events={events} date={selectedDate} />
               <InvitePanel />
               <TaskPanel />

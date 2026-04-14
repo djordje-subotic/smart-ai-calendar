@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Send, Loader2, Check, X, Clock, MapPin, RotateCcw, MessageSquare, Trash, Circle, Flag } from "lucide-react";
+import { Sparkles, Send, Loader2, Check, X, Clock, MapPin, RotateCcw, MessageSquare, Trash, Circle, Flag, AlertTriangle, ArrowRight, Pencil } from "lucide-react";
 import { playSound } from "@/src/lib/sounds";
-import { chatWithAI, type ChatMessage, type ChatResponse } from "@/src/actions/ai";
+import { chatWithAI, executeAIActions, type ChatMessage, type ChatResponse, type ChatAction } from "@/src/actions/ai";
 import { createEvent } from "@/src/actions/events";
 import { createTask } from "@/src/actions/tasks";
 import { useUIStore } from "@/src/stores/uiStore";
@@ -14,14 +14,18 @@ import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { CreditPurchase } from "./CreditPurchase";
 
 interface DisplayMessage {
   role: "user" | "assistant";
   content: string;
   events?: ChatResponse["events"];
   tasks?: ChatResponse["tasks"];
+  actions?: ChatAction[];
   savedEvents?: Set<number>;
   savedTasks?: Set<number>;
+  actionsExecuted?: boolean;
+  actionsDenied?: boolean;
 }
 
 export function AskAIDialog() {
@@ -43,6 +47,7 @@ export function AskAIDialog() {
     } catch { return []; }
   });
   const [usageInfo, setUsageInfo] = useState<{ used: number; limit: number } | null>(null);
+  const [showCreditPurchase, setShowCreditPurchase] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -84,6 +89,7 @@ export function AskAIDialog() {
   function handleClear() {
     setMessages([]);
     setChatHistory([]);
+    setShowCreditPurchase(false);
     localStorage.removeItem("kron-chat-messages");
     localStorage.removeItem("kron-chat-history");
   }
@@ -111,18 +117,22 @@ export function AskAIDialog() {
         content: result.message,
         events: result.events,
         tasks: result.tasks,
+        actions: result.actions,
         savedEvents: new Set(),
         savedTasks: new Set(),
+        actionsExecuted: false,
+        actionsDenied: false,
       };
 
       setMessages([...newMessages, assistantMsg]);
       setChatHistory([...newHistory, { role: "assistant", content: result.message }]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("limit reached") || msg.includes("Upgrade")) {
+      if (msg === "LIMIT_REACHED" || msg.includes("limit reached") || msg.includes("Upgrade")) {
+        setShowCreditPurchase(true);
         setMessages([...newMessages, {
           role: "assistant",
-          content: "You've reached your monthly AI limit. Upgrade your plan in Settings to continue using Kron AI.",
+          content: "You've used all your AI requests this month. Buy extra credits below to keep going, or upgrade your plan in Settings.",
         }]);
       } else {
         setMessages([...newMessages, { role: "assistant", content: `Error: ${msg}` }]);
@@ -146,6 +156,7 @@ export function AskAIDialog() {
         reminder_minutes: [15],
         source: "ai",
         external_id: null,
+        meeting_url: event.meeting_url || null,
         ai_metadata: { original_prompt: "chat", confidence: 0.9, model_used: "claude-haiku-4-5" },
         status: "confirmed",
       });
@@ -203,6 +214,37 @@ export function AskAIDialog() {
         if (!msg.savedTasks?.has(i)) await handleAddTask(msgIdx, i, msg.tasks[i]);
       }
     }
+  }
+
+  async function handleConfirmActions(msgIdx: number, actions: ChatAction[]) {
+    try {
+      const result = await executeAIActions(actions);
+      setMessages((prev) => prev.map((m, i) =>
+        i === msgIdx ? { ...m, actionsExecuted: true } : m
+      ));
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      playSound("success");
+
+      // Add confirmation message
+      const summary = (result.results || []).join(", ");
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: `Done! ${summary}`,
+      }]);
+    } catch (err) {
+      playSound("error");
+      console.error("Failed to execute actions:", err);
+    }
+  }
+
+  function handleDenyActions(msgIdx: number) {
+    setMessages((prev) => prev.map((m, i) =>
+      i === msgIdx ? { ...m, actionsDenied: true } : m
+    ));
+    setMessages((prev) => [...prev, {
+      role: "assistant",
+      content: "Ok, nothing was changed. Let me know if you need anything else!",
+    }]);
   }
 
   return (
@@ -356,9 +398,87 @@ export function AskAIDialog() {
                     Add all ({(msg.events?.length || 0) + (msg.tasks?.length || 0)} items)
                   </Button>
                 )}
+
+                {/* AI Action cards (delete/move/update with confirmation) */}
+                {msg.actions && msg.actions.length > 0 && (
+                  <div className="mt-2 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-[10px] text-amber-400/80 font-medium">
+                      <AlertTriangle className="h-3 w-3" />
+                      Pending actions ({msg.actions.length})
+                    </div>
+                    {msg.actions.map((action, actionIdx) => (
+                      <div key={actionIdx} className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "h-5 w-5 rounded-md flex items-center justify-center shrink-0",
+                            action.type === "delete" ? "bg-red-500/15 text-red-400" :
+                            action.type === "move" ? "bg-blue-500/15 text-blue-400" :
+                            "bg-violet-500/15 text-violet-400"
+                          )}>
+                            {action.type === "delete" && <Trash className="h-2.5 w-2.5" />}
+                            {action.type === "move" && <ArrowRight className="h-2.5 w-2.5" />}
+                            {action.type === "update" && <Pencil className="h-2.5 w-2.5" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-medium block truncate">{action.event_title}</span>
+                            <span className="text-[10px] text-muted-foreground">{action.description}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Confirm / Deny buttons */}
+                    {!msg.actionsExecuted && !msg.actionsDenied && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleConfirmActions(msgIdx, msg.actions || [])}
+                          className="flex-1 h-7 text-[10px] bg-amber-600/80 hover:bg-amber-600 border-0 text-white"
+                        >
+                          <Check className="mr-1 h-3 w-3" />
+                          Confirm ({msg.actions.length} {msg.actions.length === 1 ? "action" : "actions"})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDenyActions(msgIdx)}
+                          className="h-7 text-[10px] text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="mr-1 h-3 w-3" />
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                    {msg.actionsExecuted && (
+                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-green-400 font-medium">
+                        <Check className="h-3 w-3" />Executed successfully
+                      </div>
+                    )}
+                    {msg.actionsDenied && (
+                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                        <X className="h-3 w-3" />Cancelled
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
+
+          {showCreditPurchase && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="px-1">
+              <CreditPurchase
+                compact
+                onPurchased={() => {
+                  setShowCreditPurchase(false);
+                  setMessages((prev) => [...prev, {
+                    role: "assistant",
+                    content: "Credits added! You can keep chatting now.",
+                  }]);
+                }}
+              />
+            </motion.div>
+          )}
 
           {loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">

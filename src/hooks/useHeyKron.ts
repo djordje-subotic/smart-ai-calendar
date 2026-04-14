@@ -17,6 +17,7 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
   const enabledRef = useRef(enabled);
   const phaseRef = useRef<Phase>("idle");
   const recRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   callbackRef.current = onCommand;
   enabledRef.current = enabled;
@@ -80,7 +81,9 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
     const rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
-    rec.lang = "en-US";
+    // Support both English and Serbian for accessibility
+    rec.lang = "sr-RS";
+    // Chrome supports alternate languages - Serbian speakers can also speak English and it'll work
     recRef.current = rec;
 
     rec.onstart = () => {
@@ -113,7 +116,8 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
     rec.onend = () => {
       // Auto restart if enabled and not speaking/processing
       if (enabledRef.current && phaseRef.current !== "speaking" && phaseRef.current !== "processing") {
-        setTimeout(() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
           if (enabledRef.current && phaseRef.current !== "speaking" && phaseRef.current !== "processing") {
             startListening();
           }
@@ -122,7 +126,8 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
     };
 
     try { rec.start(); } catch {
-      setTimeout(() => startListening(), 1000);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => startListening(), 1000);
     }
   }
 
@@ -155,6 +160,7 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
   }
 
   function endConversation() {
+    if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
     stopRec();
     window.speechSynthesis?.cancel();
     updatePhase("idle");
@@ -175,6 +181,7 @@ export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
 
     return () => {
       enabledRef.current = false;
+      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
       stopRec();
       window.speechSynthesis?.cancel();
     };

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getMyInvites, respondToInvite } from "@/src/actions/social";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Clock, ArrowRight, MessageSquare } from "lucide-react";
+import { Check, X, Clock, ArrowRight, MessageSquare, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 
@@ -77,6 +77,12 @@ export function InvitePanel() {
             </p>
             {inv.proposed_location && (
               <p className="text-[10px] text-muted-foreground/60">📍 {inv.proposed_location}</p>
+            )}
+            {inv.myTimezone && inv.otherTimezone && inv.myTimezone !== inv.otherTimezone && (
+              <p className="text-[10px] text-amber-400/70 flex items-center gap-1 mt-0.5">
+                <Globe className="h-2.5 w-2.5" />
+                {inv.otherName} is in {inv.otherTimezone?.split("/")[1]?.replace(/_/g, " ") || inv.otherTimezone}
+              </p>
             )}
             {inv.counter_message && (
               <p className="text-[10px] text-cyan-400 mt-1 flex items-center gap-1">

@@ -15,7 +15,7 @@ import {
 } from "@/src/lib/calendar/utils";
 import { cn } from "@/lib/utils";
 import { EventCard } from "./EventCard";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const HOUR_HEIGHT = 48;
 const MIN_OFFSET_HOUR = 7;
@@ -60,6 +60,7 @@ export function WeekView({ events, tasks = [] }: WeekViewProps) {
   const { selectedDate, setSelectedDate, setView } = useCalendarStore();
   const { openEventModal } = useUIStore();
   const updateEvent = useUpdateEvent();
+  const containerRef = useRef<HTMLDivElement>(null);
   const weekDays = getWeekDays(selectedDate);
   const hours = getHoursOfDay();
 
@@ -98,7 +99,8 @@ export function WeekView({ events, tasks = [] }: WeekViewProps) {
     const dx = e.clientX - dragging.startX;
     const newTop = Math.max(0, dragging.origTop + dy);
     const snapped = Math.round(newTop / (HOUR_HEIGHT / 4)) * (HOUR_HEIGHT / 4);
-    const colWidth = (window.innerWidth - 260 - 64) / 7;
+    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+    const colWidth = (containerWidth - 64) / 7;
     const dayShift = Math.round(dx / colWidth);
     const newDayIdx = Math.min(6, Math.max(0, dragging.origDayIdx + dayShift));
     setDragging((d) => d ? { ...d, currentTop: snapped, currentDayIdx: newDayIdx } : null);
@@ -143,7 +145,7 @@ export function WeekView({ events, tasks = [] }: WeekViewProps) {
   }, [dragging, handleDragMove, handleDragEnd]);
 
   return (
-    <div className={cn("flex h-full flex-col overflow-auto", dragging && "select-none")}>
+    <div ref={containerRef} className={cn("flex h-full flex-col overflow-auto", dragging && "select-none")}>
       {/* Day headers */}
       <div className="sticky top-0 z-10 flex border-b border-border/30 bg-background/80 backdrop-blur-xl">
         <div className="w-16 shrink-0" />
@@ -206,9 +208,9 @@ export function WeekView({ events, tasks = [] }: WeekViewProps) {
                 {laidOut.map(({ event, col, totalCols }, i) => {
                   const isDragging = dragging?.eventId === event.id;
                   const pos = getEventPosition(event);
-                  const top = isDragging ? dragging!.currentTop : pos.top;
+                  const top = isDragging && dragging ? dragging.currentTop : pos.top;
 
-                  if (isDragging && dragging!.currentDayIdx !== dayIdx) return null;
+                  if (isDragging && dragging && dragging.currentDayIdx !== dayIdx) return null;
 
                   const width = totalCols > 1 ? `${(1 / totalCols) * 100 - 2}%` : "calc(100% - 4px)";
                   const left = totalCols > 1 ? `${(col / totalCols) * 100 + 1}%` : "2px";

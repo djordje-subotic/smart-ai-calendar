@@ -89,6 +89,7 @@ export function AIInputBar({ events }: AIInputBarProps) {
         reminder_minutes: [15],
         source: "ai",
         external_id: null,
+        meeting_url: null,
         ai_metadata: {
           original_prompt: input,
           confidence: suggestion.confidence,

@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/src/components/providers";
+import { CookieBanner } from "@/src/components/CookieBanner";
+import { THEME_BOOTSTRAP_SCRIPT } from "@/src/components/ThemeToggle";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -15,20 +17,74 @@ const jetbrains = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kron.app";
+
 export const metadata: Metadata = {
-  title: "Kron — Rule Your Time",
-  description: "The AI calendar that rules your schedule so you don't have to",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: "Kron — Rule Your Time",
+    template: "%s · Kron",
+  },
+  description: "The AI calendar that schedules your day, protects your focus, and adapts when plans change. Voice assistant, smart templates, focus mode, and more.",
+  keywords: [
+    "AI calendar",
+    "smart calendar",
+    "productivity app",
+    "time management",
+    "voice calendar",
+    "schedule optimizer",
+    "focus mode",
+    "habit tracker",
+    "task manager",
+  ],
+  authors: [{ name: "Kron" }],
+  creator: "Kron",
+  publisher: "Kron",
+  applicationName: "Kron",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: APP_URL,
+    title: "Kron — Rule Your Time",
+    description: "The AI calendar that rules your schedule so you don't have to.",
+    siteName: "Kron",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kron — Rule Your Time",
+    description: "The AI calendar that rules your schedule so you don't have to.",
+    creator: "@kronapp",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  manifest: "/manifest.json",
+  // Icons are auto-detected from app/icon.tsx and app/apple-icon.tsx
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0f0b15",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${jetbrains.variable} h-full dark`}>
+    <html lang="en" className={`${jakarta.variable} ${jetbrains.variable} h-full dark`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+      </head>
       <body className="h-full bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
+        <CookieBanner />
       </body>
     </html>
   );

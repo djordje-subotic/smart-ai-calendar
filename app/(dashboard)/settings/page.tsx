@@ -7,7 +7,14 @@ import { getGoogleAuthUrl, getGoogleSyncStatus, disconnectGoogle } from "@/src/a
 import { sendFriendRequest, getFriends, getPendingRequests, respondToFriendRequest } from "@/src/actions/social";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, Zap, Crown, Shield, Check, RefreshCw, Unlink, UserPlus, Users, X, Volume2, VolumeX } from "lucide-react";
+import { LogOut, Zap, Crown, Shield, Check, RefreshCw, Unlink, UserPlus, Users, X, Volume2, VolumeX, Coins } from "lucide-react";
+import { getBonusCredits } from "@/src/actions/credits";
+import { CreditPurchase } from "@/src/components/ai/CreditPurchase";
+import { NotificationSettings } from "@/src/components/NotificationSettings";
+import { ShareLinksPanel } from "@/src/components/ShareLinksPanel";
+import { ThemeToggle } from "@/src/components/ThemeToggle";
+import { EnergyLearningPanel } from "@/src/components/EnergyLearningPanel";
+import { CalendarSubscriptionsPanel } from "@/src/components/CalendarSubscriptionsPanel";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -18,24 +25,24 @@ const plans: { id: Plan; name: string; price: string; period: string; icon: type
     price: "$0",
     period: "/forever",
     icon: Shield,
-    features: ["20 AI requests/month", "Calendar + Tasks + Habits", "Smart nudges", "Voice input"],
+    features: ["50 AI requests/month", "Calendar + Tasks + Habits", "Smart nudges", "Voice input"],
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$9",
+    price: "$9.99",
     period: "/month",
     icon: Zap,
     popular: true,
-    features: ["300 AI requests/month", "All features unlocked", "Replan my day", "Schedule optimizer", "Daily AI briefing", "Google Calendar sync", "Energy scheduling"],
+    features: ["1,000 AI requests/month", "All features unlocked", "Replan my day", "Schedule optimizer", "Daily AI briefing", "Google Calendar sync", "Booking links", "Energy scheduling"],
   },
   {
     id: "ultra",
     name: "Ultra",
-    price: "$19",
+    price: "$19.99",
     period: "/month",
     icon: Crown,
-    features: ["3000 AI requests/month", "Everything in Pro", "Priority support", "API access", "10x more than Pro"],
+    features: ["5,000 AI requests/month", "Everything in Pro", "Priority support", "API access", "5x more than Pro"],
   },
 ];
 
@@ -51,23 +58,51 @@ export default function SettingsPage() {
   const [friendError, setFriendError] = useState<string | null>(null);
   const [friendSuccess, setFriendSuccess] = useState(false);
   const [soundsOn, setSoundsOn] = useState(true);
+  const [bonusCredits, setBonusCredits] = useState(0);
 
   useEffect(() => {
-    getUsageStats().then(setUsage);
-    getGoogleSyncStatus().then((s) => setGoogleConnected(s.connected));
-    getFriends().then(setFriends);
-    getPendingRequests().then(setPendingReqs);
+    getUsageStats().then(setUsage).catch(() => {});
+    getGoogleSyncStatus().then((s) => setGoogleConnected(s.connected)).catch(() => {});
+    getFriends().then((f) => setFriends(Array.isArray(f) ? f : [])).catch(() => {});
+    getPendingRequests().then((p) => setPendingReqs(Array.isArray(p) ? p : [])).catch(() => {});
     setSoundsOn(localStorage.getItem("kron-sounds") !== "false");
+    getBonusCredits().then(setBonusCredits).catch(() => {});
   }, []);
 
   async function handleChangePlan(planId: Plan) {
     setSwitching(planId);
-    const result = await changePlan(planId);
-    if (result.success) {
-      const stats = await getUsageStats();
-      setUsage(stats);
+    try {
+      // Downgrade to free is free - just change plan
+      if (planId === "free") {
+        const result = await changePlan(planId);
+        if (result.success) {
+          const stats = await getUsageStats();
+          setUsage(stats);
+        }
+        setSwitching(null);
+        return;
+      }
+
+      // Upgrade to Pro/Ultra - go through Lemon Squeezy checkout
+      const res = await fetch("/api/subscription/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId }),
+      });
+      const data = await res.json();
+
+      if (data.mode === "lemonsqueezy" && data.url) {
+        window.location.href = data.url;
+      } else if (data.mode === "simulated") {
+        // Dev mode - plan changed directly
+        const stats = await getUsageStats();
+        setUsage(stats);
+      }
+    } catch (err) {
+      console.error("Plan upgrade failed:", err);
+    } finally {
+      setSwitching(null);
     }
-    setSwitching(null);
   }
 
   async function handleCancel() {
@@ -83,7 +118,7 @@ export default function SettingsPage() {
   const currentPlan = usage?.plan || "free";
 
   return (
-    <div className="mx-auto max-w-4xl p-6 space-y-8 overflow-auto h-full">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 space-y-6 sm:space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h2 className="text-xl font-bold tracking-tight">Settings</h2>
         <p className="text-sm text-muted-foreground mt-1">Manage your account and subscription</p>
@@ -112,9 +147,29 @@ export default function SettingsPage() {
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{usage.used}</span> / {usage.limit} AI requests used
+            {bonusCredits > 0 && (
+              <span className="ml-2 text-primary">+ {bonusCredits} bonus credits</span>
+            )}
           </p>
         </motion.div>
       )}
+
+      {/* Buy Extra Credits */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/30 bg-card/50 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Coins className="h-4 w-4 text-primary" />
+              Extra AI Credits
+            </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Buy on demand — credits never expire</p>
+          </div>
+          {bonusCredits > 0 && (
+            <span className="text-sm font-bold text-primary">{bonusCredits} remaining</span>
+          )}
+        </div>
+        <CreditPurchase onPurchased={(newBalance) => setBonusCredits(newBalance)} />
+      </motion.div>
 
       {/* Calendar Integrations */}
       <div>
@@ -133,15 +188,14 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="text-xs border-border/40" disabled={syncing} onClick={async () => {
                   setSyncing(true);
-                  await fetch("/api/google/sync", { method: "POST" });
+                  try { await fetch("/api/google/sync", { method: "POST" }); } catch {}
                   setSyncing(false);
                 }}>
                   <RefreshCw className={`h-3 w-3 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
                   {syncing ? "Syncing..." : "Sync now"}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-xs text-destructive/60 hover:text-destructive" onClick={async () => {
-                  await disconnectGoogle();
-                  setGoogleConnected(false);
+                  try { await disconnectGoogle(); setGoogleConnected(false); } catch {}
                 }}>
                   <Unlink className="h-3 w-3 mr-1.5" />
                   Disconnect
@@ -149,8 +203,7 @@ export default function SettingsPage() {
               </div>
             ) : (
               <Button variant="outline" size="sm" className="text-xs border-border/40" onClick={async () => {
-                const url = await getGoogleAuthUrl();
-                window.location.href = url;
+                try { const url = await getGoogleAuthUrl(); window.location.href = url; } catch {}
               }}>
                 Connect
               </Button>
@@ -186,16 +239,12 @@ export default function SettingsPage() {
               <div key={r.id} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                 <span className="text-xs font-medium flex-1">{r.fromName} wants to connect</span>
                 <Button size="sm" className="h-7 text-[10px] gradient-primary border-0 text-primary-foreground" onClick={async () => {
-                  await respondToFriendRequest(r.id, true);
-                  setPendingReqs((p) => p.filter((x) => x.id !== r.id));
-                  const f = await getFriends();
-                  setFriends(f);
+                  try { await respondToFriendRequest(r.id, true); setPendingReqs((p) => p.filter((x) => x.id !== r.id)); const f = await getFriends(); setFriends(Array.isArray(f) ? f : []); } catch {}
                 }}>
                   <Check className="mr-1 h-3 w-3" />Accept
                 </Button>
                 <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={async () => {
-                  await respondToFriendRequest(r.id, false);
-                  setPendingReqs((p) => p.filter((x) => x.id !== r.id));
+                  try { await respondToFriendRequest(r.id, false); setPendingReqs((p) => p.filter((x) => x.id !== r.id)); } catch {}
                 }}>
                   <X className="h-3 w-3" />
                 </Button>
@@ -216,13 +265,11 @@ export default function SettingsPage() {
             if (!friendEmail.trim()) return;
             setFriendError(null);
             setFriendSuccess(false);
-            const res = await sendFriendRequest(friendEmail.trim());
-            if (res.success) {
-              setFriendSuccess(true);
-              setFriendEmail("");
-            } else {
-              setFriendError(res.error || "Failed");
-            }
+            try {
+              const res = await sendFriendRequest(friendEmail.trim());
+              if (res.success) { setFriendSuccess(true); setFriendEmail(""); }
+              else { setFriendError(res.error || "Failed"); }
+            } catch { setFriendError("Network error"); }
           }}>
             <UserPlus className="mr-1.5 h-3.5 w-3.5" />Add
           </Button>
@@ -286,7 +333,7 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative rounded-xl border p-7 pb-8 transition-all flex flex-col min-h-[380px] ${
+                className={`relative rounded-xl border p-5 sm:p-7 pb-6 sm:pb-8 transition-all flex flex-col ${
                   plan.popular
                     ? "border-primary/40 bg-primary/5 shadow-lg shadow-primary/10"
                     : "border-border/30 bg-card/50"
@@ -369,6 +416,61 @@ export default function SettingsPage() {
           </Button>
         </motion.div>
       )}
+
+      {/* Appearance */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.22 }}
+        className="pt-4 border-t border-border/30"
+      >
+        <h3 className="text-sm font-medium mb-3 text-muted-foreground">Appearance</h3>
+        <ThemeToggle />
+      </motion.div>
+
+      {/* Notifications */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+        className="pt-4 border-t border-border/30"
+      >
+        <h3 className="text-sm font-medium mb-3 text-muted-foreground">Notifications</h3>
+        <NotificationSettings />
+      </motion.div>
+
+      {/* Share links */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.27 }}
+        className="pt-4 border-t border-border/30"
+      >
+        <h3 className="text-sm font-medium mb-3 text-muted-foreground">Booking links</h3>
+        <ShareLinksPanel />
+      </motion.div>
+
+      {/* Calendar subscriptions */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.275 }}
+        className="pt-4 border-t border-border/30"
+      >
+        <h3 className="text-sm font-medium mb-3 text-muted-foreground">External calendars</h3>
+        <CalendarSubscriptionsPanel />
+      </motion.div>
+
+      {/* AI personalization */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.28 }}
+        className="pt-4 border-t border-border/30"
+      >
+        <h3 className="text-sm font-medium mb-3 text-muted-foreground">AI personalization</h3>
+        <EnergyLearningPanel />
+      </motion.div>
 
       {/* Account */}
       <motion.div

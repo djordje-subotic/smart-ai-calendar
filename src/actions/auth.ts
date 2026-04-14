@@ -2,6 +2,7 @@
 
 import { createClient } from "@/src/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { sendEmail, welcomeEmail } from "@/src/lib/email";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -34,6 +35,11 @@ export async function register(formData: FormData) {
   if (error) {
     return { error: error.message };
   }
+
+  // Fire-and-forget welcome email. If email provider isn't configured this
+  // just logs and returns ok — signup is never blocked on this.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kron.app";
+  sendEmail({ to: email, ...welcomeEmail({ name: fullName, appUrl }) }).catch(() => {});
 
   redirect("/calendar");
 }

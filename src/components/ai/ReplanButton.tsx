@@ -53,6 +53,7 @@ export function ReplanButton() {
           reminder_minutes: [15],
           source: "ai",
           external_id: null,
+          meeting_url: null,
           ai_metadata: { original_prompt: "replan", confidence: 0.8, model_used: "claude-haiku-4-5" },
           status: "confirmed",
         });

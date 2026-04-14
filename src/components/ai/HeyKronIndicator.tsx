@@ -5,6 +5,7 @@ import { useHeyKron } from "@/src/hooks/useHeyKron";
 import { playSound } from "@/src/lib/sounds";
 import { chatWithAI, type ChatMessage } from "@/src/actions/ai";
 import { createEvent } from "@/src/actions/events";
+import { createClient } from "@/src/lib/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff, Loader2, Volume2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,14 +19,26 @@ export function HeyKronIndicator() {
 
   useEffect(() => {
     setMounted(true);
-    setEnabled(localStorage.getItem("kron-hey-mode") === "true");
+    // Load voice preference from DB, fallback to localStorage
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from("profiles").select("voice_enabled").eq("id", user.id).single().then(({ data }) => {
+          const voiceOn = data?.voice_enabled || false;
+          setEnabled(voiceOn);
+          localStorage.setItem("kron-hey-mode", String(voiceOn));
+        });
+      } else {
+        setEnabled(localStorage.getItem("kron-hey-mode") === "true");
+      }
+    });
   }, []);
 
   const handleCommand = useCallback(async (command: string): Promise<string> => {
     const newHistory: ChatMessage[] = [...chatHistory, { role: "user", content: command }];
 
     try {
-      const result = await chatWithAI(newHistory);
+      const result = await chatWithAI(newHistory, "Europe/Belgrade", true);
       setChatHistory([...newHistory, { role: "assistant", content: result.message }]);
 
       if (result.events && result.events.length > 0) {
@@ -42,6 +55,7 @@ export function HeyKronIndicator() {
             reminder_minutes: [15],
             source: "ai",
             external_id: null,
+            meeting_url: event.meeting_url || null,
             ai_metadata: { original_prompt: command, confidence: 0.9, model_used: "claude-haiku-4-5" },
             status: "confirmed",
           });
@@ -64,6 +78,11 @@ export function HeyKronIndicator() {
     const next = !enabled;
     setEnabled(next);
     localStorage.setItem("kron-hey-mode", String(next));
+    // Persist to DB
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) supabase.from("profiles").update({ voice_enabled: next }).eq("id", user.id);
+    });
     if (next) playSound("activate");
     if (!next) {
       endConversation();
@@ -185,7 +204,7 @@ export function HeyKronIndicator() {
             </div>
 
             <div className="px-4 py-2 border-t border-border/20 text-[9px] text-muted-foreground/40 text-center">
-              Always listening · Just speak naturally
+              Always listening · Try &ldquo;What&apos;s next?&rdquo; or &ldquo;Read my day&rdquo;
             </div>
           </motion.div>
         )}

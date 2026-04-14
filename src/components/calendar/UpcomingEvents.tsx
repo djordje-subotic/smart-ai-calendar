@@ -3,7 +3,7 @@
 import { CalendarEvent } from "@/src/types/event";
 import { parseISO, isSameDay, isAfter, format } from "date-fns";
 import { motion } from "framer-motion";
-import { Clock, MapPin, Sparkles, CalendarDays } from "lucide-react";
+import { Clock, MapPin, Sparkles, CalendarDays, Video } from "lucide-react";
 import { useUIStore } from "@/src/stores/uiStore";
 
 interface UpcomingEventsProps {
@@ -89,6 +89,18 @@ export function UpcomingEvents({ events, date }: UpcomingEventsProps) {
                   </span>
                 )}
               </div>
+              {event.meeting_url && (
+                <a
+                  href={event.meeting_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 mt-1 rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[9px] font-medium text-primary hover:bg-primary/20 transition-colors w-fit"
+                >
+                  <Video className="h-2.5 w-2.5" />
+                  Join call
+                </a>
+              )}
             </div>
           </motion.button>
         );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUIStore } from "@/src/stores/uiStore";
@@ -12,7 +13,8 @@ import { CalendarEvent, RecurrenceRule } from "@/src/types/event";
 import { EVENT_COLORS, DEFAULT_EVENT_COLOR } from "@/src/constants/colors";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Trash2, CalendarDays, Clock, MapPin, AlignLeft, RotateCcw, Sparkles } from "lucide-react";
+import { Trash2, CalendarDays, Clock, MapPin, AlignLeft, RotateCcw, Sparkles, Video, Link, Loader2, X } from "lucide-react";
+import { generateMeetLink, getGoogleSyncStatus } from "@/src/actions/google-calendar";
 
 interface EventModalProps {
   events: CalendarEvent[];
@@ -43,6 +45,13 @@ export function EventModal({ events }: EventModalProps) {
   const [endTime, setEndTime] = useState("10:00");
   const [color, setColor] = useState<string>(DEFAULT_EVENT_COLOR);
   const [recurrence, setRecurrence] = useState("none");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [generatingMeet, setGeneratingMeet] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState(false);
+
+  useEffect(() => {
+    getGoogleSyncStatus().then((s) => setGoogleConnected(s.connected));
+  }, []);
 
   useEffect(() => {
     if (existingEvent) {
@@ -54,6 +63,7 @@ export function EventModal({ events }: EventModalProps) {
       setEndTime(format(new Date(existingEvent.end_time), "HH:mm"));
       setColor(existingEvent.color);
       setRecurrence(existingEvent.recurrence_rule?.freq || "none");
+      setMeetingUrl(existingEvent.meeting_url || "");
     } else {
       setTitle("");
       setDescription("");
@@ -63,6 +73,7 @@ export function EventModal({ events }: EventModalProps) {
       setEndTime(prefillEndTime || "10:00");
       setColor(DEFAULT_EVENT_COLOR);
       setRecurrence("none");
+      setMeetingUrl("");
     }
   }, [existingEvent, selectedDate, isEventModalOpen]);
 
@@ -70,8 +81,8 @@ export function EventModal({ events }: EventModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (endTime <= startTime) {
-      alert("End time must be after start time");
+    if (!startTime || !endTime || endTime <= startTime) {
+      alert("Please set valid start and end times");
       return;
     }
     const startDateTime = new Date(`${date}T${startTime}`).toISOString();
@@ -95,6 +106,7 @@ export function EventModal({ events }: EventModalProps) {
       source: "manual" as const,
       external_id: null,
       ai_metadata: null,
+      meeting_url: meetingUrl || null,
       status: "confirmed" as const,
     };
 
@@ -175,6 +187,64 @@ export function EventModal({ events }: EventModalProps) {
               <AlignLeft className="h-4 w-4 text-muted-foreground/50 shrink-0" />
               <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add description" className="border-border/30 bg-muted/20 text-sm" />
             </div>
+
+            {/* Video call */}
+            <div className="flex items-center gap-3">
+              <Video className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+              {meetingUrl ? (
+                <div className="flex items-center gap-2 flex-1 rounded-md border border-border/30 bg-muted/20 px-3 py-1.5">
+                  <Link className="h-3 w-3 text-primary shrink-0" />
+                  <a href={meetingUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary truncate flex-1 hover:underline">
+                    {meetingUrl.replace(/^https?:\/\//, "")}
+                  </a>
+                  <button type="button" onClick={() => setMeetingUrl("")} className="text-muted-foreground/50 hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    value={meetingUrl}
+                    onChange={(e) => setMeetingUrl(e.target.value)}
+                    placeholder="Paste meeting link (Zoom, Meet...)"
+                    className="border-border/30 bg-muted/20 text-sm"
+                  />
+                  {googleConnected && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={generatingMeet}
+                      className="shrink-0 text-xs border-border/30 gap-1.5"
+                      onClick={async () => {
+                        setGeneratingMeet(true);
+                        try {
+                          const startDateTime = new Date(`${date}T${startTime}`).toISOString();
+                          const endDateTime = new Date(`${date}T${endTime}`).toISOString();
+                          const result = await generateMeetLink(title || "Meeting", startDateTime, endDateTime);
+                          if (result?.url) {
+                            setMeetingUrl(result.url);
+                          }
+                        } catch (err) {
+                          console.error("Failed to generate Meet link:", err);
+                        } finally {
+                          setGeneratingMeet(false);
+                        }
+                      }}
+                    >
+                      {generatingMeet ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Video className="h-3 w-3" />
+                          Meet
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Color picker */}
@@ -216,8 +286,4 @@ export function EventModal({ events }: EventModalProps) {
       </DialogContent>
     </Dialog>
   );
-}
-
-function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", className)}>{children}</span>;
 }

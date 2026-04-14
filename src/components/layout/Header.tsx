@@ -13,7 +13,7 @@ import {
   addDays,
   subDays,
 } from "@/src/lib/calendar/utils";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Menu } from "lucide-react";
 import { NotificationBell } from "@/src/components/social/NotificationBell";
 import { HeyKronIndicator } from "@/src/components/ai/HeyKronIndicator";
 import { motion } from "framer-motion";
@@ -27,7 +27,7 @@ const views: { value: CalendarView; label: string }[] = [
 
 export function Header() {
   const { selectedDate, view, setSelectedDate, setView } = useCalendarStore();
-  const { openEventModal } = useUIStore();
+  const { openEventModal, setMobileMenuOpen } = useUIStore();
 
   function navigate(direction: "prev" | "next") {
     const fn =
@@ -57,34 +57,34 @@ export function Header() {
         : format(selectedDate, "EEEE, MMMM d, yyyy");
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border/50 px-4">
-      <div className="flex items-center gap-4">
-        {/* Today button */}
+    <header className="flex h-14 items-center justify-between border-b border-border/50 px-3 sm:px-4 gap-2">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setMobileMenuOpen(true)}
+          className="h-8 w-8 lg:hidden shrink-0"
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+
+        {/* Today button - hidden on very small screens */}
         <Button
           variant="outline"
           size="sm"
           onClick={goToToday}
-          className="border-border/50 bg-transparent text-xs font-medium hover:bg-accent/50"
+          className="border-border/50 bg-transparent text-xs font-medium hover:bg-accent/50 hidden sm:inline-flex"
         >
           Today
         </Button>
 
         {/* Navigation arrows */}
         <div className="flex items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("prev")}
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => navigate("prev")}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("next")}
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => navigate("next")}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -95,21 +95,21 @@ export function Header() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="text-lg font-semibold tracking-tight"
+          className="text-sm sm:text-lg font-semibold tracking-tight truncate"
         >
           {title}
         </motion.h1>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* View switcher */}
-        <div className="relative flex rounded-lg border border-border/50 bg-muted/30 p-0.5">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* View switcher - hidden on mobile */}
+        <div className="relative hidden sm:flex rounded-lg border border-border/50 bg-muted/30 p-0.5">
           {views.map((v) => (
             <button
               key={v.value}
               onClick={() => setView(v.value)}
               className={cn(
-                "relative rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                "relative rounded-md px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors",
                 view === v.value
                   ? "text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -134,10 +134,10 @@ export function Header() {
         <Button
           size="sm"
           onClick={() => openEventModal()}
-          className="gradient-primary border-0 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow"
+          className="gradient-primary border-0 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow h-8"
         >
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          New Event
+          <Plus className="h-3.5 w-3.5 sm:mr-1.5" />
+          <span className="hidden sm:inline">New Event</span>
         </Button>
       </div>
     </header>

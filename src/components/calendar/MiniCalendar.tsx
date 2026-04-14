@@ -12,7 +12,7 @@ import {
 } from "@/src/lib/calendar/utils";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const dayHeaders = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -20,7 +20,10 @@ const dayHeaders = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 export function MiniCalendar() {
   const { selectedDate, setSelectedDate, setView } = useCalendarStore();
   const [displayMonth, setDisplayMonth] = useState(selectedDate);
+  const [mounted, setMounted] = useState(false);
   const days = getMonthDays(displayMonth);
+
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <div className="select-none">
@@ -52,7 +55,7 @@ export function MiniCalendar() {
         ))}
         {days.map((day) => {
           const selected = isSameDay(day, selectedDate);
-          const today = isToday(day);
+          const today = mounted && isToday(day);
           const currentMonth = isSameMonth(day, displayMonth);
           return (
             <button

@@ -13,6 +13,7 @@ export interface CalendarEvent {
   source: "manual" | "ai" | "google" | "apple" | "outlook";
   external_id: string | null;
   ai_metadata: AIMetadata | null;
+  meeting_url: string | null;
   status: "confirmed" | "tentative" | "cancelled";
   created_at: string;
   updated_at: string;
