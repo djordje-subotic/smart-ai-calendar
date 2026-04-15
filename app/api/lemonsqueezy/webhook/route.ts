@@ -69,16 +69,29 @@ export async function POST(request: Request) {
         if (custom.user_id && custom.plan) {
           const userId = custom.user_id as string;
           const plan = custom.plan as string; // "pro" or "ultra"
+          // LS subscription id lives on data.id — stash it so the Cancel
+          // button in Settings can call back to LS to actually stop billing.
+          const lsSubscriptionId = event.data?.id ? String(event.data.id) : null;
 
-          await supabase.from("profiles").update({ plan }).eq("id", userId);
+          await supabase
+            .from("profiles")
+            .update({
+              plan,
+              ...(lsSubscriptionId ? { ls_subscription_id: lsSubscriptionId } : {}),
+            })
+            .eq("id", userId);
 
-          await supabase.from("notifications").insert({
-            user_id: userId,
-            type: "plan_activated",
-            title: `${plan.toUpperCase()} plan activated!`,
-            message: `Welcome to Krowna ${plan.toUpperCase()}. Enjoy premium features.`,
-            data: { plan },
-          });
+          // Only notify on creation/resume — updates (mid-cycle plan changes)
+          // are silent to avoid spamming the notification bell.
+          if (eventName !== "subscription_updated") {
+            await supabase.from("notifications").insert({
+              user_id: userId,
+              type: "plan_activated",
+              title: `${plan.toUpperCase()} plan activated!`,
+              message: `Welcome to Krowna ${plan.toUpperCase()}. Enjoy premium features.`,
+              data: { plan },
+            });
+          }
         }
         break;
       }
