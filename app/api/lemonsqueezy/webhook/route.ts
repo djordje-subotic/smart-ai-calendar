@@ -96,15 +96,39 @@ export async function POST(request: Request) {
         break;
       }
 
-      case "subscription_cancelled":
+      case "subscription_cancelled": {
+        // User cancelled but keeps access until end of the paid period.
+        // Don't touch `plan` here — wait for `subscription_expired`.
+        // Just notify so they see confirmation in the bell.
+        if (custom.user_id) {
+          const renewsAt = attributes.renews_at || attributes.ends_at;
+          const endsLabel = renewsAt
+            ? ` You'll keep access until ${new Date(String(renewsAt)).toLocaleDateString()}.`
+            : " You'll keep access until the end of your billing period.";
+
+          await supabase.from("notifications").insert({
+            user_id: custom.user_id as string,
+            type: "plan_cancelling",
+            title: "Subscription cancelled",
+            message: `Your ${(custom.plan as string | undefined)?.toUpperCase() || "premium"} plan is cancelled.${endsLabel}`,
+            data: { cancelled_at: new Date().toISOString() },
+          });
+        }
+        break;
+      }
+
       case "subscription_expired": {
+        // Billing period over — now actually downgrade to free.
         if (custom.user_id) {
           const userId = custom.user_id as string;
-          await supabase.from("profiles").update({ plan: "free" }).eq("id", userId);
+          await supabase
+            .from("profiles")
+            .update({ plan: "free", ls_subscription_id: null })
+            .eq("id", userId);
 
           await supabase.from("notifications").insert({
             user_id: userId,
-            type: "plan_cancelled",
+            type: "plan_expired",
             title: "Subscription ended",
             message: "Your plan has been downgraded to Free. Your data is safe.",
             data: {},
