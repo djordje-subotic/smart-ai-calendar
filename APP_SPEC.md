@@ -111,17 +111,13 @@ Krowna is a premium AI-powered calendar app that aims to be the #1 smart calenda
 
 ## Pricing & Monetization
 - **Free**: 50 AI requests/month, basic features, voice input, friends & invites
-- **Pro** ($9.99/mo): 1,000 AI requests, Replan my day, Schedule optimizer, Daily briefing, Google Calendar sync, Booking links, Extra credits purchase
+- **Pro** ($9.99/mo): 1,000 AI requests, Replan my day, Schedule optimizer, Daily briefing, Google Calendar sync, Booking links
 - **Ultra** ($19.99/mo): 5,000 AI requests, everything in Pro, priority support, API access
-- **On-demand Credit Packs** (all plans):
-  - 150 credits — $2.99
-  - 500 credits — $5.99 (Best Value)
-  - 1,500 credits — $14.99
-  - Credits never expire, no subscription required
-- Bonus credits deducted when plan monthly limit is reached
+- **Credit packs (150/500/1,500 credits)** — product code + UI + LS variant env vars are shipped but the purchase UI is **hidden for MVP** (commented out in CreditPurchase/Settings/AskAIDialog). Re-enable after launch when we have usage data to justify pay-as-you-go.
 - Usage tracked per-user with monthly reset
 - Upgrade/downgrade/cancel from Settings page
-- Lemon Squeezy hosted checkout for real payments (with dev-mode simulated success when no API key)
+- Lemon Squeezy hosted checkout for real payments (Merchant of Record — handles VAT/tax)
+- **Cancel flow**: Settings "Cancel" button → `cancelSubscription()` → LS `DELETE /v1/subscriptions/{id}`. User keeps Pro/Ultra access until end of paid period. `subscription_cancelled` webhook shows notification with end date; `subscription_expired` webhook then downgrades `plan` to `free` and nulls `ls_subscription_id`.
 
 ## Database Schema (Supabase PostgreSQL)
 - **profiles**: user settings, timezone, plan, ai_credits_used, energy_profile
@@ -195,8 +191,8 @@ smart-ai-calendar/
 │   ├── hooks/                  # useEvents, useVoice, useHeyKrowna
 │   ├── types/                  # event (meeting_url), task, habit, ai (AIAction)
 │   ├── constants/              # colors, credits
-│   └── __tests__/              # 10 test suites, 175 tests
-├── supabase/migrations/        # 14 SQL migrations (001-014)
+│   └── __tests__/              # 19 test suites, 312 tests
+├── supabase/migrations/        # 17 SQL migrations (001-017)
 ├── mobile/                     # Expo React Native app
 │   ├── app/(auth)/             # Login, Register (premium dark theme)
 │   ├── app/(tabs)/             # 10 screens: calendar, today, ai, habits, tasks, profile, friends, tools, more, settings
@@ -344,14 +340,12 @@ Full profile page with 11 sections, split into "Profile Info" and "AI Personaliz
 - Short events show Video icon indicator, long events show "Join" button
 - AI suggests meet links when creating meeting-type events
 
-### 25. On-Demand AI Credits
-- When monthly plan limit is reached, users can buy extra credits instead of hitting a wall
-- **3 packages**: 50 credits ($1.99), 150 credits ($4.99, "Best Value"), 500 credits ($11.99)
-- Bonus credits never expire, don't reset monthly
-- `checkAndTrackUsage()` automatically falls back to bonus credits when plan limit hit
-- **Chat UX**: credit packages appear inline when limit reached, purchase is instant
-- **Settings**: "Extra AI Credits" section shows balance + purchase options
-- `credit_purchases` table tracks purchase history with RLS
+### 25. On-Demand AI Credits (hidden for MVP)
+- **Current status**: UI hidden across web + mobile + AI dialog + landing page (commented-out blocks). Re-enable after launch with real usage data.
+- Kept intact (for easy restore): `CreditPurchase` component, `CREDIT_PACKAGES` constant, `/api/credits/checkout` route, `purchaseCredits` action, `bonus_credits` column, `credit_purchases` table, LS variant env vars (`LS_VARIANT_PACK_150/500/1500` — mocked until packs re-enabled).
+- **Packages (when re-enabled)**: 150 credits ($2.99), 500 credits ($5.99, "Best Value"), 1,500 credits ($14.99)
+- **Out-of-credits behavior (current)**: AskAIDialog shows "Upgrade to Pro or Ultra in Settings to keep going" instead of inline credit purchase.
+- `checkAndTrackUsage()` automatically falls back to bonus credits when plan limit hit — works if a user already has bonus credits from pre-MVP tests.
 
 ### 26. Voice-First Accessibility (Hey Krowna)
 - `voiceMode` flag on `chatWithAI()` changes AI behavior for spoken interaction
@@ -394,7 +388,13 @@ calendar_subscriptions:
 events (additions):
   subscription_id (FK), external_uid (for ICS deduplication)
 
-Migrations: 001-016 (16 migrations total)
+profiles (additions, migration 017):
+  ls_subscription_id (TEXT) — Lemon Squeezy subscription ID captured on
+                              subscription_created webhook. Used by
+                              cancelSubscription() to call LS API and
+                              actually stop billing on cancel.
+
+Migrations: 001-017 (17 migrations total)
 ```
 
 ## API Endpoints (Next.js /api routes)
@@ -464,7 +464,7 @@ EXPO_PUBLIC_API_URL           # URL of deployed web for AI calls
 | Free | $0 | 50/mo | Calendar, tasks, habits, nudges, voice, friends |
 | Pro | $9.99/mo | 1,000/mo | All features: Replan, Optimize, Briefing, GCal, Energy, Booking links |
 | Ultra | $19.99/mo | 5,000/mo | Everything in Pro + Priority support + API |
-| Credits | $2.99–$14.99 | 150–1,500 | On-demand, never expire, any plan |
+| ~~Credits~~ | ~~$2.99–$14.99~~ | ~~150–1,500~~ | **Hidden for MVP — re-enable post-launch** |
 
 ## Cost Optimization (AI Hybrid System)
 - **Simple queries** (event creation, questions, quick actions) → GPT-4o mini ($0.15/M input)
@@ -726,7 +726,7 @@ Feature parity with web:
 - [x] User Profile & Goals — 11 sections of personalization
 - [x] Friends page with avatars, birthdays, search
 - [x] Smart Meet integration — generate + join video calls
-- [x] On-demand AI credits — pay-as-you-go with new packages (100/300/1000)
+- [x] On-demand AI credits (backend + LS checkout) — packages are 150/500/1,500 but **UI hidden for MVP**; re-enable after launch
 - [x] Voice-first accessibility — Web Speech API (browser) + Whisper (mobile)
 - [x] Weekly AI Report — 7-day summary with insights
 - [x] Calendar Heatmap — GitHub-style activity grid
@@ -755,7 +755,10 @@ Feature parity with web:
 - [x] **Mobile notification bell** — in-app modal with read/unread
 
 ### Completed — Production hardening (v1.0)
-- [x] **Lemon Squeezy payments** — credits (3 packs) + subscriptions (Pro/Ultra), HMAC-SHA256 webhook
+- [x] **Lemon Squeezy payments** — subscriptions (Pro $9.99 / Ultra $19.99); credit packs built + hidden for MVP
+- [x] **Proper cancel flow** — `cancelSubscription()` calls LS `DELETE /subscriptions/{id}`; user keeps access until billing period ends; plan downgrades only on `subscription_expired` webhook (migration 017 adds `ls_subscription_id`)
+- [x] **Lemon Squeezy webhook** — HMAC-SHA256 signed, 7 events handled (order, subscription created/updated/cancelled/resumed/expired/payment_failed)
+- [x] **Production deploy** — Vercel at `https://krowna.app`, Supabase migrations 015-017 applied to prod
 - [x] **Apple / ICS calendar sync** — subscription URLs (web) + native EventKit (mobile via expo-calendar)
 - [x] **Public booking links** — Calendly-style share page with conflict detection + double-book prevention
 - [x] **Password reset flow** — forgot + reset pages via `supabase.auth`
