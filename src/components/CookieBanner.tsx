@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Cookie } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const STORAGE_KEY = "kron-cookie-consent-v1";
+const STORAGE_KEY = "krowna-cookie-consent-v1";
 
 export function CookieBanner() {
   const [open, setOpen] = useState(false);

@@ -5,12 +5,12 @@ import { playSound } from "@/src/lib/sounds";
 
 type Phase = "idle" | "ready" | "listening" | "processing" | "speaking";
 
-interface UseHeyKronOptions {
+interface UseHeyKrownaOptions {
   onCommand: (command: string) => Promise<string>;
   enabled: boolean;
 }
 
-export function useHeyKron({ onCommand, enabled }: UseHeyKronOptions) {
+export function useHeyKrowna({ onCommand, enabled }: UseHeyKrownaOptions) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [transcript, setTranscript] = useState("");
   const callbackRef = useRef(onCommand);

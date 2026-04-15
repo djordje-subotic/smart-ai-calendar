@@ -59,7 +59,7 @@ export async function createLemonSqueezyCheckout(opts: LSCheckoutOptions): Promi
         },
         product_options: {
           redirect_url: opts.redirectUrl,
-          receipt_button_text: opts.receiptButtonText || "Back to Kron",
+          receipt_button_text: opts.receiptButtonText || "Back to Krowna",
         },
         checkout_options: {
           embed: false,

@@ -7,7 +7,7 @@ import { supabase } from "../../src/lib/supabase";
 import { getCached, setCached } from "../../src/lib/offlineCache";
 import { syncEventReminders } from "../../src/lib/notifications";
 import { colors } from "../../src/constants/colors";
-import { KronLogo } from "../../src/components/KronLogo";
+import { KrownaLogo } from "../../src/components/KrownaLogo";
 import { NotificationBell } from "../../src/components/NotificationBell";
 import { EventModal, EditableEvent } from "../../src/components/EventModal";
 import { EventQuickActions } from "../../src/components/EventQuickActions";
@@ -83,7 +83,7 @@ export default function TodayScreen() {
     <SafeAreaView style={s.container}>
       {/* Header */}
       <View style={s.header}>
-        <KronLogo size="sm" showText={false} />
+        <KrownaLogo size="sm" showText={false} />
         <View style={{ flex: 1 }}>
           <Text style={s.greeting}>Today</Text>
           <Text style={s.date}>{format(today, "EEEE, MMMM d")}</Text>
@@ -145,7 +145,7 @@ export default function TodayScreen() {
           <View style={s.emptyState}>
             <Ionicons name="sunny-outline" size={32} color={colors.primary + "60"} />
             <Text style={s.emptyTitle}>Your day is open</Text>
-            <Text style={s.emptyHint}>Ask Kron AI or tap New to plan</Text>
+            <Text style={s.emptyHint}>Ask Krowna AI or tap New to plan</Text>
           </View>
         ) : (
           events.map((item) => {

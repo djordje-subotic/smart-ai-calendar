@@ -18,7 +18,7 @@ export type SendEmailInput = {
   replyTo?: string;
 };
 
-const DEFAULT_FROM = process.env.EMAIL_FROM || "Kron <hello@kron.app>";
+const DEFAULT_FROM = process.env.EMAIL_FROM || "Krowna <hello@krowna.com>";
 
 export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -60,7 +60,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; e
   }
 }
 
-/** Wrap any inner HTML in the branded Kron shell. */
+/** Wrap any inner HTML in the branded Krowna shell. */
 export function renderEmailShell(content: string, opts?: { ctaUrl?: string; ctaLabel?: string }) {
   const cta = opts?.ctaUrl && opts.ctaLabel
     ? `<div style="margin:28px 0 8px 0"><a href="${opts.ctaUrl}" style="display:inline-block;background:#f59e0b;color:#1a1020;padding:14px 22px;border-radius:12px;font-weight:700;text-decoration:none">${opts.ctaLabel}</a></div>`
@@ -75,7 +75,7 @@ export function renderEmailShell(content: string, opts?: { ctaUrl?: string; ctaL
           <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;background:#17121f;border:1px solid rgba(245,158,11,0.15);border-radius:20px;padding:32px">
             <tr>
               <td>
-                <div style="font-size:24px;font-weight:900;letter-spacing:-0.5px;color:#fbbf24;margin-bottom:24px">Kron</div>
+                <div style="font-size:24px;font-weight:900;letter-spacing:-0.5px;color:#fbbf24;margin-bottom:24px">Krowna</div>
                 <div style="font-size:15px;line-height:1.6;color:#d8d2e4">
                   ${content}
                 </div>
@@ -85,9 +85,9 @@ export function renderEmailShell(content: string, opts?: { ctaUrl?: string; ctaL
             <tr>
               <td style="padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);margin-top:28px">
                 <p style="font-size:11px;color:#8a8497;line-height:1.5;margin:18px 0 0 0">
-                  You received this email because you have an account with Kron.
-                  <a href="https://kron.app/legal/privacy" style="color:#8a8497;text-decoration:underline">Privacy</a> ·
-                  <a href="mailto:support@kron.app" style="color:#8a8497;text-decoration:underline">Contact</a>
+                  You received this email because you have an account with Krowna.
+                  <a href="https://krowna.com/legal/privacy" style="color:#8a8497;text-decoration:underline">Privacy</a> ·
+                  <a href="mailto:support@krowna.com" style="color:#8a8497;text-decoration:underline">Contact</a>
                 </p>
               </td>
             </tr>
@@ -102,21 +102,21 @@ export function renderEmailShell(content: string, opts?: { ctaUrl?: string; ctaL
 /* --- Preset templates --- */
 
 export function welcomeEmail({ name, appUrl }: { name?: string; appUrl: string }) {
-  const greeting = name ? `Welcome, ${name}!` : "Welcome to Kron!";
+  const greeting = name ? `Welcome, ${name}!` : "Welcome to Krowna!";
   const inner = `
     <h1 style="font-size:22px;font-weight:800;margin:0 0 12px 0;color:#fff">${greeting}</h1>
     <p>You just joined the calendar that actually plans your week.</p>
     <p>Here's what to try in your first 5 minutes:</p>
     <ul style="padding-left:18px;margin:12px 0 20px 0">
       <li style="margin:6px 0">Hit ⌘K and say <em>"Plan my productive week."</em></li>
-      <li style="margin:6px 0">Add a focus block and Kron will defend it.</li>
+      <li style="margin:6px 0">Add a focus block and Krowna will defend it.</li>
       <li style="margin:6px 0">Connect Google Calendar so everything lives in one place.</li>
     </ul>
   `;
   return {
-    subject: "Welcome to Kron — let's rule your time",
-    html: renderEmailShell(inner, { ctaUrl: `${appUrl}/calendar`, ctaLabel: "Open Kron" }),
-    text: `${greeting}\n\nYou just joined Kron. Open the app to get started: ${appUrl}/calendar`,
+    subject: "Welcome to Krowna — let's rule your time",
+    html: renderEmailShell(inner, { ctaUrl: `${appUrl}/calendar`, ctaLabel: "Open Krowna" }),
+    text: `${greeting}\n\nYou just joined Krowna. Open the app to get started: ${appUrl}/calendar`,
   };
 }
 
@@ -151,7 +151,7 @@ export function bookingGuestEmail({
   `;
   return {
     subject: `Confirmed: ${formatted}`,
-    html: renderEmailShell(inner, { ctaUrl: `${appUrl}`, ctaLabel: "Visit Kron" }),
+    html: renderEmailShell(inner, { ctaUrl: `${appUrl}`, ctaLabel: "Visit Krowna" }),
     text: `Your meeting is confirmed for ${formatted}.`,
   };
 }
@@ -177,7 +177,7 @@ export function bookingHostEmail({
     <h1 style="font-size:22px;font-weight:800;margin:0 0 12px 0;color:#fff">New booking on your calendar</h1>
     <p><strong>${guestName}</strong> (${guestEmail}) just booked ${formatted}.</p>
     ${notes ? `<p style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;margin:12px 0;color:#d8d2e4">"${notes}"</p>` : ""}
-    <p>The event is already on your Kron calendar.</p>
+    <p>The event is already on your Krowna calendar.</p>
   `;
   return {
     subject: `New booking: ${guestName} · ${formatted}`,

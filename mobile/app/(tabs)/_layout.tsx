@@ -2,7 +2,7 @@ import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/constants/colors";
-import { KronCrown } from "../../src/components/KronLogo";
+import { KrownaCrown } from "../../src/components/KrownaLogo";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -45,7 +45,7 @@ function AITabIcon({ focused }: { focused: boolean }) {
         borderWidth: focused ? 0 : 1,
         borderColor: colors.primary + "30",
       }}>
-        <KronCrown size={20} color={focused ? colors.primaryForeground : colors.primary} />
+        <KrownaCrown size={20} color={focused ? colors.primaryForeground : colors.primary} />
       </View>
       <Text style={{
         fontSize: 9,
@@ -53,7 +53,7 @@ function AITabIcon({ focused }: { focused: boolean }) {
         color: focused ? colors.primary : colors.muted,
         letterSpacing: 0.3,
       }}>
-        Kron AI
+        Krowna AI
       </Text>
     </View>
   );

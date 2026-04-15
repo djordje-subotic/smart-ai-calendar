@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { migrateLocalStorageKey } from "@/src/lib/storageMigration";
 
 interface SoundState {
   soundEnabled: boolean;
@@ -7,14 +8,14 @@ interface SoundState {
 }
 
 export const useSoundStore = create<SoundState>((set) => ({
-  soundEnabled: typeof window !== "undefined" ? localStorage.getItem("kron-sounds") !== "false" : true,
+  soundEnabled: typeof window !== "undefined" ? migrateLocalStorageKey("krowna-sounds", "krowna-sounds") !== "false" : true,
   toggleSound: () => set((s) => {
     const next = !s.soundEnabled;
-    localStorage.setItem("kron-sounds", String(next));
+    localStorage.setItem("krowna-sounds", String(next));
     return { soundEnabled: next };
   }),
   setSoundEnabled: (enabled) => {
-    localStorage.setItem("kron-sounds", String(enabled));
+    localStorage.setItem("krowna-sounds", String(enabled));
     set({ soundEnabled: enabled });
   },
 }));

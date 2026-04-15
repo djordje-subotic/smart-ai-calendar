@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import { getTheme, setTheme, subscribeTheme, type ThemeName } from "../constants/colors";
 
-const STORAGE_KEY = "kron-theme-v1";
+const STORAGE_KEY = "krowna-theme-v1";
 
 /**
  * React hook that re-renders consumers when the theme flips. Also hydrates
@@ -14,7 +14,6 @@ export function useTheme(): { theme: ThemeName; setTheme: (t: ThemeName) => Prom
 
   useEffect(() => {
     const unsub = subscribeTheme(() => force((n) => n + 1));
-    // Hydrate from storage on first mount
     SecureStore.getItemAsync(STORAGE_KEY)
       .then((stored) => {
         if (stored === "light" || stored === "dark") setTheme(stored);

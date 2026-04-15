@@ -4,7 +4,7 @@ import { Logo } from "@/src/components/layout/Logo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms of Service for Kron — the AI calendar that rules your time.",
+  description: "Terms of Service for Krowna — the AI calendar that rules your time.",
 };
 
 const EFFECTIVE_DATE = "April 11, 2026";
@@ -33,31 +33,31 @@ export default function TermsPage() {
 
         <article className="prose prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-3 prose-p:text-sm prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-sm prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-primary">
           <p>
-            Welcome to Kron. These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of
-            the Kron web and mobile applications, including any features, content, and services
-            offered by Kron (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;). By creating an account or using Kron, you
+            Welcome to Krowna. These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of
+            the Krowna web and mobile applications, including any features, content, and services
+            offered by Krowna (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;). By creating an account or using Krowna, you
             agree to these Terms.
           </p>
 
           <h2>1. Your Account</h2>
           <p>
-            You must be at least 13 years old to use Kron. You are responsible for maintaining the
+            You must be at least 13 years old to use Krowna. You are responsible for maintaining the
             security of your account credentials and for all activity on your account. Notify us
-            immediately at <a href="mailto:support@kron.app">support@kron.app</a> if you suspect
+            immediately at <a href="mailto:support@krowna.com">support@krowna.com</a> if you suspect
             unauthorized access.
           </p>
 
           <h2>2. Acceptable Use</h2>
           <ul>
-            <li>Do not use Kron to violate any law or third-party rights.</li>
+            <li>Do not use Krowna to violate any law or third-party rights.</li>
             <li>Do not attempt to reverse engineer, disrupt, or overload our services.</li>
             <li>Do not submit content that is unlawful, abusive, or infringing.</li>
-            <li>Do not use Kron to send spam or unsolicited communications.</li>
+            <li>Do not use Krowna to send spam or unsolicited communications.</li>
           </ul>
 
           <h2>3. Subscriptions, Credits & Payments</h2>
           <p>
-            Kron offers free and paid plans, as well as optional AI credit packs. Payments are
+            Krowna offers free and paid plans, as well as optional AI credit packs. Payments are
             processed by Lemon Squeezy, who acts as the Merchant of Record and handles applicable
             taxes. Subscriptions renew automatically until cancelled. You can cancel at any time
             from Settings; access continues until the end of the current billing period.
@@ -69,28 +69,28 @@ export default function TermsPage() {
 
           <h2>4. AI Features</h2>
           <p>
-            Kron uses third-party large language models (including OpenAI and Anthropic) to power
+            Krowna uses third-party large language models (including OpenAI and Anthropic) to power
             scheduling, planning, and voice features. AI output may be inaccurate or incomplete.
             You are responsible for reviewing AI suggestions before relying on them.
           </p>
 
           <h2>5. Your Content</h2>
           <p>
-            You retain ownership of the events, tasks, notes, and other data you create in Kron
+            You retain ownership of the events, tasks, notes, and other data you create in Krowna
             (&ldquo;Your Content&rdquo;). You grant us a limited license to store, process, and display Your
             Content solely to operate the service. We do not sell Your Content.
           </p>
 
           <h2>6. Third-Party Integrations</h2>
           <p>
-            Kron can connect to external services such as Google Calendar. Your use of those
+            Krowna can connect to external services such as Google Calendar. Your use of those
             integrations is also governed by their terms. Disconnecting an integration stops future
             syncing but does not delete data already imported.
           </p>
 
           <h2>7. Service Availability</h2>
           <p>
-            We work to keep Kron reliable but do not guarantee uninterrupted availability. Features
+            We work to keep Krowna reliable but do not guarantee uninterrupted availability. Features
             may change or be removed. We may suspend accounts that violate these Terms.
           </p>
 
@@ -103,7 +103,7 @@ export default function TermsPage() {
 
           <h2>9. Disclaimers</h2>
           <p>
-            Kron is provided &ldquo;as is&rdquo; without warranties of any kind. To the maximum extent
+            Krowna is provided &ldquo;as is&rdquo; without warranties of any kind. To the maximum extent
             permitted by law, we disclaim all implied warranties of merchantability, fitness for a
             particular purpose, and non-infringement.
           </p>
@@ -111,7 +111,7 @@ export default function TermsPage() {
           <h2>10. Limitation of Liability</h2>
           <p>
             To the maximum extent permitted by law, our aggregate liability arising from your use of
-            Kron is limited to the amount you paid us in the 12 months preceding the claim. We are
+            Krowna is limited to the amount you paid us in the 12 months preceding the claim. We are
             not liable for indirect, incidental, or consequential damages.
           </p>
 
@@ -123,12 +123,12 @@ export default function TermsPage() {
 
           <h2>12. Contact</h2>
           <p>
-            Questions? Reach us at <a href="mailto:support@kron.app">support@kron.app</a>.
+            Questions? Reach us at <a href="mailto:support@krowna.com">support@krowna.com</a>.
           </p>
         </article>
 
         <div className="mt-12 flex items-center justify-between border-t border-border/30 pt-6 text-xs text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">&larr; Back to Kron</Link>
+          <Link href="/" className="hover:text-foreground">&larr; Back to Krowna</Link>
           <Link href="/legal/privacy" className="hover:text-foreground">Privacy Policy &rarr;</Link>
         </div>
       </main>

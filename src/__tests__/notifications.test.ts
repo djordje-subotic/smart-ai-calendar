@@ -48,7 +48,7 @@ describe("scheduleEventReminders", () => {
     vi.setSystemTime(NOW);
 
     installBrowserGlobals("granted");
-    localStorage.setItem("kron-notifications-enabled-v1", "1");
+    localStorage.setItem("krowna-notifications-enabled-v1", "1");
 
     vi.resetModules();
     notifications = await import("@/src/lib/notifications");
@@ -61,7 +61,7 @@ describe("scheduleEventReminders", () => {
   });
 
   it("is a no-op when notifications are disabled", () => {
-    localStorage.removeItem("kron-notifications-enabled-v1");
+    localStorage.removeItem("krowna-notifications-enabled-v1");
     notifications.scheduleEventReminders([
       {
         id: "e1",
@@ -240,7 +240,7 @@ describe("areNotificationsEnabled", () => {
 
   it("returns false when permission is not granted", async () => {
     installBrowserGlobals("default");
-    localStorage.setItem("kron-notifications-enabled-v1", "1");
+    localStorage.setItem("krowna-notifications-enabled-v1", "1");
     const mod = await import("@/src/lib/notifications");
     expect(mod.areNotificationsEnabled()).toBe(false);
   });
@@ -254,7 +254,7 @@ describe("areNotificationsEnabled", () => {
 
   it("returns true when permission granted AND opted in", async () => {
     installBrowserGlobals("granted");
-    localStorage.setItem("kron-notifications-enabled-v1", "1");
+    localStorage.setItem("krowna-notifications-enabled-v1", "1");
     const mod = await import("@/src/lib/notifications");
     expect(mod.areNotificationsEnabled()).toBe(true);
   });
@@ -273,13 +273,13 @@ describe("setNotificationsEnabled", () => {
   it("writes the flag when enabled", async () => {
     const mod = await import("@/src/lib/notifications");
     mod.setNotificationsEnabled(true);
-    expect(localStorage.getItem("kron-notifications-enabled-v1")).toBe("1");
+    expect(localStorage.getItem("krowna-notifications-enabled-v1")).toBe("1");
   });
 
   it("removes the flag when disabled", async () => {
-    localStorage.setItem("kron-notifications-enabled-v1", "1");
+    localStorage.setItem("krowna-notifications-enabled-v1", "1");
     const mod = await import("@/src/lib/notifications");
     mod.setNotificationsEnabled(false);
-    expect(localStorage.getItem("kron-notifications-enabled-v1")).toBeNull();
+    expect(localStorage.getItem("krowna-notifications-enabled-v1")).toBeNull();
   });
 });

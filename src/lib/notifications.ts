@@ -30,13 +30,23 @@ export async function requestNotificationPermission(): Promise<NotificationSuppo
   return result as NotificationSupport;
 }
 
-const STORAGE_KEY = "kron-notifications-enabled-v1";
+const STORAGE_KEY = "krowna-notifications-enabled-v1";
+const LEGACY_STORAGE_KEY = "krowna-notifications-enabled-v1";
 
 export function areNotificationsEnabled(): boolean {
   if (typeof window === "undefined") return false;
   if (getNotificationSupport() !== "granted") return false;
   try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
+    let value = localStorage.getItem(STORAGE_KEY);
+    if (value === null) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy !== null) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        value = legacy;
+      }
+    }
+    return value === "1";
   } catch {
     return false;
   }
@@ -145,7 +155,7 @@ export function scheduleEventReminders(events: ReminderEvent[]) {
           fireAt,
           title: event.title,
           body,
-          tag: `kron-event-${event.id}`,
+          tag: `krowna-event-${event.id}`,
         });
         scheduled.set(key, { timerId: 0 as unknown as ReturnType<typeof setTimeout>, fireAt });
         continue;
@@ -155,7 +165,7 @@ export function scheduleEventReminders(events: ReminderEvent[]) {
       const timerId = setTimeout(() => {
         showNotification(event.title, {
           body,
-          tag: `kron-event-${event.id}`,
+          tag: `krowna-event-${event.id}`,
           requireInteraction: offset <= 5,
         });
         scheduled.delete(key);

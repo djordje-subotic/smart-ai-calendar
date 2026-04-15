@@ -15,7 +15,7 @@ interface Props {
  * Records audio while held, transcribes when released.
  * On platforms without STT available, serves as visual cue / launches dictation.
  */
-export function HeyKronButton({ onTranscript, compact }: Props) {
+export function HeyKrownaButton({ onTranscript, compact }: Props) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [processing, setProcessing] = useState(false);

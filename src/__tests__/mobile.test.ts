@@ -58,7 +58,7 @@ describe("Mobile App - Tab Navigation", () => {
     const layout = readFile(`${MOBILE}/(tabs)/_layout.tsx`);
     expect(layout).toContain('"Calendar"');
     expect(layout).toContain('"Today"');
-    expect(layout).toContain("Kron AI");
+    expect(layout).toContain("Krowna AI");
     expect(layout).toContain('"Habits"');
     expect(layout).toContain('"More"');
   });
@@ -88,9 +88,9 @@ describe("Mobile App - Auth Flow", () => {
     expect(register).toContain("Free forever");
   });
 
-  it("login should have Kron branding", () => {
+  it("login should have Krowna branding", () => {
     const login = readFile(`${MOBILE}/(auth)/login.tsx`);
-    expect(login).toContain("kron");
+    expect(login).toContain("krowna");
     expect(login).toContain("RULE YOUR TIME");
   });
 });

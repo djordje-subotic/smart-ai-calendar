@@ -11,17 +11,17 @@ import { Loader2, Crown, Check, ArrowRight, Sparkles, Calendar, Target, Mic } fr
 import { motion } from "framer-motion";
 
 const benefits = [
-  { icon: Sparkles, title: "AI-Powered Scheduling", desc: "Just say what you need — Kron creates your entire schedule" },
+  { icon: Sparkles, title: "AI-Powered Scheduling", desc: "Just say what you need — Krowna creates your entire schedule" },
   { icon: Calendar, title: "All-in-One", desc: "Calendar, tasks, habits, friends, voice — one app for everything" },
   { icon: Target, title: "Personalized to You", desc: "Set goals, habits, constraints — AI adapts to your lifestyle" },
-  { icon: Mic, title: "Voice Assistant", desc: "\"Hey Kron, plan my week\" — hands-free, screen-reader accessible" },
+  { icon: Mic, title: "Voice Assistant", desc: "\"Hey Krowna, plan my week\" — hands-free, screen-reader accessible" },
 ];
 
 const freeIncludes = [
   "30 AI requests per month",
   "Full calendar with week/day views",
   "Tasks, habits, and streaks",
-  "Voice input and Hey Kron",
+  "Voice input and Hey Krowna",
   "Friends and social scheduling",
   "Smart nudges (no AI cost)",
   "Schedule score and energy tracking",
@@ -56,7 +56,7 @@ export default function RegisterPage() {
             <span className="gradient-text">Let AI rule it.</span>
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Kron is not just a calendar — it&apos;s your personal AI time manager that knows your goals, respects your constraints, and adapts when plans change.
+            Krowna is not just a calendar — it&apos;s your personal AI time manager that knows your goals, respects your constraints, and adapts when plans change.
           </p>
 
           <div className="mt-8 space-y-4">

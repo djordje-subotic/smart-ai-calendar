@@ -32,7 +32,7 @@ export async function sendFriendRequest(friendEmail: string): Promise<{ success:
     .rpc("find_user_by_email", { target_email: friendEmail });
 
   if (lookupError || !targetUser) {
-    return { success: false, error: "User not found. They need to sign up for Kron first." };
+    return { success: false, error: "User not found. They need to sign up for Krowna first." };
   }
 
   const friendId = targetUser;

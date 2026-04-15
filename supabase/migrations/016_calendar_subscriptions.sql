@@ -1,5 +1,5 @@
 -- External calendar subscriptions (iCloud, Outlook, public ICS feeds).
--- Works via ICS URL — users share their public calendar link and Kron
+-- Works via ICS URL — users share their public calendar link and Krowna
 -- keeps a read-only mirror in sync.
 
 CREATE TABLE IF NOT EXISTS calendar_subscriptions (

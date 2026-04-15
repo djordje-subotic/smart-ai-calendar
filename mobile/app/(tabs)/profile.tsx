@@ -140,7 +140,7 @@ export default function ProfileScreen() {
 
         {/* Profile Info */}
         <SectionTitle>Profile Info</SectionTitle>
-        <Field label="Display name" value={displayName} onChange={setDisplayName} placeholder="How should Kron call you?" />
+        <Field label="Display name" value={displayName} onChange={setDisplayName} placeholder="How should Krowna call you?" />
 
         <View style={s.row}>
           <View style={{ flex: 1 }}>
@@ -159,12 +159,12 @@ export default function ProfileScreen() {
 
         <Field label="Occupation" value={occupation} onChange={setOccupation} placeholder="Software Engineer..." />
         <Field label="Motto" value={motto} onChange={setMotto} placeholder="Discipline equals freedom..." />
-        <Field label="Bio" value={bio} onChange={setBio} placeholder="Tell Kron about yourself..." multiline />
+        <Field label="Bio" value={bio} onChange={setBio} placeholder="Tell Krowna about yourself..." multiline />
 
         {/* AI Personalization */}
         <SectionTitle>AI Personalization</SectionTitle>
 
-        <Label>Kron's personality</Label>
+        <Label>Krowna's personality</Label>
         <View style={s.motivationGrid}>
           {MOTIVATION_STYLES.map((style) => (
             <TouchableOpacity

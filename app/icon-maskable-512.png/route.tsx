@@ -3,9 +3,9 @@ import { ImageResponse } from "next/og";
 export const runtime = "edge";
 
 /**
- * Maskable icon — the safe area is the inner 80% (per Android adaptive icon
- * guidelines). We center the crown tighter inside that safe area so Android
- * can crop the edges for different mask shapes without clipping the artwork.
+ * Maskable PWA icon — safe area is the inner 80% per Android adaptive icon
+ * guidelines. Artwork is centered inside that area so Android can crop the
+ * edges for different mask shapes without clipping the crown.
  */
 export async function GET() {
   return new ImageResponse(

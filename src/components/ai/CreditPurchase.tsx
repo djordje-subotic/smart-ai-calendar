@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Zap, Check, Sparkles, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { purchaseCredits } from "@/src/actions/credits";
@@ -88,17 +87,18 @@ export function CreditPurchase({ onPurchased, compact = false }: CreditPurchaseP
             <div className="text-[10px] text-muted-foreground">credits</div>
             <div className={cn("font-semibold mt-1", compact ? "text-sm" : "text-base", pack.popular && "text-primary")}>{pack.price}</div>
             <div className="text-[9px] text-muted-foreground/60">{pack.perCredit}/req</div>
-            <Button
-              size="sm"
-              disabled={buying !== null}
+            {/* Visual-only "Buy" pill — the whole card is the real <button>, so
+                we render a styled div to avoid button-in-button invalid HTML. */}
+            <div
               className={cn(
-                "w-full mt-2 text-[10px] h-7",
-                pack.popular ? "gradient-primary border-0 text-primary-foreground" : ""
+                "w-full mt-2 text-[10px] h-7 rounded-md inline-flex items-center justify-center font-medium border",
+                pack.popular
+                  ? "gradient-primary border-0 text-primary-foreground"
+                  : "border-border/40 bg-transparent text-foreground"
               )}
-              variant={pack.popular ? "default" : "outline"}
             >
               {buying === pack.id ? "Buying..." : "Buy"}
-            </Button>
+            </div>
           </button>
         ))}
       </div>

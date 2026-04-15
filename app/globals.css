@@ -85,7 +85,7 @@
 }
 
 .light {
-  /* Light mode — warm off-white background, amber primary to match the Kron brand */
+  /* Light mode — warm off-white background, amber primary to match the Krowna brand */
   --background: oklch(0.985 0.004 75);
   --foreground: oklch(0.18 0.02 265);
   --card: oklch(1 0 0);

@@ -475,7 +475,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">Avatar & Identity</h3>
-            <p className="text-[11px] text-muted-foreground/70">How you appear to Kron and friends</p>
+            <p className="text-[11px] text-muted-foreground/70">How you appear to Krowna and friends</p>
           </div>
         </div>
 
@@ -515,7 +515,7 @@ export default function ProfilePage() {
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="How should Kron call you?"
+                placeholder="How should Krowna call you?"
                 className="border-border/30 bg-muted/15"
               />
             </div>
@@ -600,10 +600,10 @@ export default function ProfilePage() {
       {/* ============================================= */}
       {/* SECTION 2: AI PERSONALIZATION                 */}
       {/* ============================================= */}
-      <SectionDivider title="AI Personalization" subtitle="Help Kron understand you for better schedules" />
+      <SectionDivider title="AI Personalization" subtitle="Help Krowna understand you for better schedules" />
 
       {/* Motivation Style */}
-      <Section icon={MessageCircle} title="Kron's Personality" description="How should Kron talk to you? This changes the AI's tone." number={2}>
+      <Section icon={MessageCircle} title="Krowna's Personality" description="How should Krowna talk to you? This changes the AI's tone." number={2}>
         <div className="grid grid-cols-2 gap-2">
           {MOTIVATION_STYLES.map((style) => (
             <button

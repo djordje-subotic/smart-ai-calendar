@@ -3,10 +3,10 @@ import { router } from "expo-router";
 
 /**
  * Parses deep link URLs like:
- * kron://event/123 → opens event details
- * kron://friend/xyz → opens friend profile
- * kron://calendar → opens calendar
- * kron://today → opens today view
+ * krowna://event/123 → opens event details
+ * krowna://friend/xyz → opens friend profile
+ * krowna://calendar → opens calendar
+ * krowna://today → opens today view
  */
 export function handleDeepLink(url: string): boolean {
   try {

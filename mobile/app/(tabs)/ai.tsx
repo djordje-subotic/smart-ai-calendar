@@ -5,8 +5,8 @@ import { supabase } from "../../src/lib/supabase";
 import { colors } from "../../src/constants/colors";
 import { speak } from "../../src/lib/voice";
 import { haptic } from "../../src/lib/haptics";
-import { KronCrown } from "../../src/components/KronLogo";
-import { HeyKronButton } from "../../src/components/HeyKronButton";
+import { KrownaCrown } from "../../src/components/KrownaLogo";
+import { HeyKrownaButton } from "../../src/components/HeyKrownaButton";
 import { format } from "date-fns";
 
 interface ChatEvent { title: string; start_time: string; end_time: string; color: string; meeting_url?: string | null; recurrence?: any; }
@@ -74,9 +74,9 @@ export default function AIScreen() {
       {/* Header */}
       <View style={s.header}>
         <View style={s.headerLeft}>
-          <View style={s.logoBadge}><KronCrown size={18} /></View>
+          <View style={s.logoBadge}><KrownaCrown size={18} /></View>
           <View>
-            <Text style={s.headerTitle}>Kron AI</Text>
+            <Text style={s.headerTitle}>Krowna AI</Text>
             <Text style={s.headerSubtitle}>Your personal time manager</Text>
           </View>
         </View>
@@ -106,7 +106,7 @@ export default function AIScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={s.empty}>
-            <View style={s.emptyGlow}><KronCrown size={40} /></View>
+            <View style={s.emptyGlow}><KrownaCrown size={40} /></View>
             <Text style={s.emptyTitle}>How can I help?</Text>
             <Text style={s.emptySubtitle}>Create events, manage schedule, or ask anything</Text>
             <View style={s.suggestionsGrid}>
@@ -178,7 +178,7 @@ export default function AIScreen() {
             style={s.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Tell Kron or hold mic..."
+            placeholder="Tell Krowna or hold mic..."
             placeholderTextColor={colors.muted + "60"}
             onSubmitEditing={handleSend}
             editable={!loading}
@@ -194,7 +194,7 @@ export default function AIScreen() {
               <Text style={s.sendText}>↑</Text>
             </TouchableOpacity>
           ) : (
-            <HeyKronButton compact onTranscript={(text) => setInput(text)} />
+            <HeyKrownaButton compact onTranscript={(text) => setInput(text)} />
           )}
         </View>
       </KeyboardAvoidingView>

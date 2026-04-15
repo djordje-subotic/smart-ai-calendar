@@ -5,7 +5,7 @@ type SoundType = "activate" | "process" | "success" | "error" | "click" | "toggl
 export function playSound(type: SoundType) {
   if (typeof window === "undefined") return;
   // Check if sounds enabled
-  if (localStorage.getItem("kron-sounds") === "false") return;
+  if (localStorage.getItem("krowna-sounds") === "false") return;
 
   try {
     const ctx = new AudioContext();

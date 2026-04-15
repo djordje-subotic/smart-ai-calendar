@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../src/stores/authStore";
 import { router } from "expo-router";
 import { colors } from "../../src/constants/colors";
-import { KronLogo } from "../../src/components/KronLogo";
+import { KrownaLogo } from "../../src/components/KrownaLogo";
 
 const { width } = Dimensions.get("window");
 
@@ -32,9 +32,9 @@ export default function LoginScreen() {
           {/* Brand */}
           <View style={s.brandContainer}>
             <View style={s.glowOuter} />
-            <KronLogo size="xl" showText={false} />
+            <KrownaLogo size="xl" showText={false} />
           </View>
-          <Text style={s.logo}>kron</Text>
+          <Text style={s.logo}>krowna</Text>
           <Text style={s.tagline}>RULE YOUR TIME</Text>
 
           {/* Feature pills */}

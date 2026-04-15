@@ -136,7 +136,7 @@ export async function POST(
     }).then(() => {}, () => {}); // table may not exist in dev; silent fail
 
     // Email confirmations (fire and forget — failure shouldn't block the booking)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kron.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://krowna.com";
     const { data: hostProfile } = await supabase
       .from("profiles")
       .select("full_name, email")

@@ -54,7 +54,7 @@ export function NotificationSettings() {
       <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm">
         <p className="font-semibold text-destructive">Notifications blocked</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          You&apos;ve blocked Kron notifications in your browser. Re-enable them from your browser&apos;s site
+          You&apos;ve blocked Krowna notifications in your browser. Re-enable them from your browser&apos;s site
           settings, then refresh this page.
         </p>
       </div>
@@ -75,7 +75,7 @@ export function NotificationSettings() {
           <p className="text-sm font-semibold">Event reminders</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {enabled
-              ? "Kron will ping you before your events start."
+              ? "Krowna will ping you before your events start."
               : "Get a desktop notification before your next event."}
           </p>
         </div>

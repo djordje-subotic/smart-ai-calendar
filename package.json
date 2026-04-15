@@ -12,7 +12,8 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "ci": "npm run typecheck && npm run test:run"
+    "ci": "npm run typecheck && npm run test:run",
+    "generate:icons": "node mobile/scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
@@ -47,6 +48,7 @@
     "eslint-config-next": "16.2.2",
     "jsdom": "^29.0.2",
     "tailwindcss": "^4",
+    "to-ico": "^1.1.5",
     "typescript": "^5",
     "vitest": "^2.1.8"
   }

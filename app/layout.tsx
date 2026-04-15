@@ -17,13 +17,13 @@ const jetbrains = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kron.app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://krowna.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: "Kron — Rule Your Time",
-    template: "%s · Kron",
+    default: "Krowna — Rule Your Time",
+    template: "%s · Krowna",
   },
   description: "The AI calendar that schedules your day, protects your focus, and adapts when plans change. Voice assistant, smart templates, focus mode, and more.",
   keywords: [
@@ -37,23 +37,23 @@ export const metadata: Metadata = {
     "habit tracker",
     "task manager",
   ],
-  authors: [{ name: "Kron" }],
-  creator: "Kron",
-  publisher: "Kron",
-  applicationName: "Kron",
+  authors: [{ name: "Krowna" }],
+  creator: "Krowna",
+  publisher: "Krowna",
+  applicationName: "Krowna",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: APP_URL,
-    title: "Kron — Rule Your Time",
+    title: "Krowna — Rule Your Time",
     description: "The AI calendar that rules your schedule so you don't have to.",
-    siteName: "Kron",
+    siteName: "Krowna",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kron — Rule Your Time",
+    title: "Krowna — Rule Your Time",
     description: "The AI calendar that rules your schedule so you don't have to.",
-    creator: "@kronapp",
+    creator: "@krownaapp",
   },
   robots: {
     index: true,

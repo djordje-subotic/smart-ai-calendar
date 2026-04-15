@@ -65,7 +65,7 @@ export default function SettingsPage() {
     getGoogleSyncStatus().then((s) => setGoogleConnected(s.connected)).catch(() => {});
     getFriends().then((f) => setFriends(Array.isArray(f) ? f : [])).catch(() => {});
     getPendingRequests().then((p) => setPendingReqs(Array.isArray(p) ? p : [])).catch(() => {});
-    setSoundsOn(localStorage.getItem("kron-sounds") !== "false");
+    setSoundsOn(localStorage.getItem("krowna-sounds") !== "false");
     getBonusCredits().then(setBonusCredits).catch(() => {});
   }, []);
 
@@ -154,7 +154,9 @@ export default function SettingsPage() {
         </motion.div>
       )}
 
-      {/* Buy Extra Credits */}
+      {/* Buy Extra Credits — hidden for MVP launch, subscription-only pricing.
+          Re-enable once we have usage data and LS credit-pack variants configured. */}
+      {/*
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/30 bg-card/50 p-5">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -170,6 +172,7 @@ export default function SettingsPage() {
         </div>
         <CreditPurchase onPurchased={(newBalance) => setBonusCredits(newBalance)} />
       </motion.div>
+      */}
 
       {/* Calendar Integrations */}
       <div>
@@ -312,7 +315,7 @@ export default function SettingsPage() {
             onClick={() => {
               const next = !soundsOn;
               setSoundsOn(next);
-              localStorage.setItem("kron-sounds", String(next));
+              localStorage.setItem("krowna-sounds", String(next));
             }}
             className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${soundsOn ? "bg-primary" : "bg-muted"}`}
           >

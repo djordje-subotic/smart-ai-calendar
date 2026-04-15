@@ -184,7 +184,7 @@ PERSONALIZATION RULES:
 `;
   }
 
-  const systemPrompt = `You are Kron, a premium AI calendar assistant. You have a conversation with the user to help them manage their schedule.
+  const systemPrompt = `You are Krowna, a premium AI calendar assistant. You have a conversation with the user to help them manage their schedule.
 
 Current date/time: ${now}
 Today's date: ${todayISO}
@@ -386,7 +386,7 @@ export async function generateDailyBriefing(timezone: string = "Europe/Belgrade"
     max_tokens: 200,
     messages: [{
       role: "user",
-      content: `You are Kron, a premium AI calendar assistant. Give a brief, friendly daily briefing (2-3 sentences max). Current time: ${now}. Today's events: ${JSON.stringify(events || [])}. If no events, suggest planning. Match language of events.`,
+      content: `You are Krowna, a premium AI calendar assistant. Give a brief, friendly daily briefing (2-3 sentences max). Current time: ${now}. Today's events: ${JSON.stringify(events || [])}. If no events, suggest planning. Match language of events.`,
     }],
   });
 
@@ -494,7 +494,7 @@ export async function replanDay(
     max_tokens: 512,
     messages: [{
       role: "user",
-      content: `You are Kron, a personal time manager. Current time: ${now}. The user wants to replan their day.
+      content: `You are Krowna, a personal time manager. Current time: ${now}. The user wants to replan their day.
 
 Reason: "${reason}"
 
@@ -627,7 +627,7 @@ export async function generateWeeklyReport(timezone: string = "Europe/Belgrade")
     max_tokens: 512,
     messages: [{
       role: "user",
-      content: `You are Kron, a personal time manager. Generate a weekly report.
+      content: `You are Krowna, a personal time manager. Generate a weekly report.
 
 User: ${profile?.display_name || "User"}
 Goals: ${JSON.stringify(profile?.goals || [])}
@@ -691,7 +691,7 @@ export async function generateMeetingPrep(eventId: string, timezone: string = "E
     max_tokens: 400,
     messages: [{
       role: "user",
-      content: `You are Kron. Generate a quick meeting prep briefing.
+      content: `You are Krowna. Generate a quick meeting prep briefing.
 
 Meeting: ${event.title}
 Time: ${event.start_time} - ${event.end_time}

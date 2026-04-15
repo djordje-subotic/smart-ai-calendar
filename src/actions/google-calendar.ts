@@ -95,12 +95,12 @@ export async function generateMeetLink(
       calendarId: "primary",
       conferenceDataVersion: 1,
       requestBody: {
-        summary: title || "Kron Meeting",
+        summary: title || "Krowna Meeting",
         start: { dateTime: startTime },
         end: { dateTime: endTime },
         conferenceData: {
           createRequest: {
-            requestId: `kron-${Date.now()}`,
+            requestId: `krowna-${Date.now()}`,
             conferenceSolutionKey: { type: "hangoutsMeet" },
           },
         },

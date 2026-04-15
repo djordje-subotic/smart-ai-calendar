@@ -110,7 +110,7 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
         <BookingClient slug={link.slug} slotsByDay={slotsByDay} durationMinutes={link.duration_minutes} />
 
         <p className="mt-12 text-center text-xs text-muted-foreground">
-          Powered by <span className="font-semibold text-foreground">Kron</span>
+          Powered by <span className="font-semibold text-foreground">Krowna</span>
         </p>
       </div>
     </div>

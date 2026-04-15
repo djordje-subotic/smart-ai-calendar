@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 
 type Theme = "dark" | "light" | "system";
 
-const STORAGE_KEY = "kron-theme-v1";
+const STORAGE_KEY = "krowna-theme-v1";
+const LEGACY_STORAGE_KEY = "krowna-theme-v1";
 
 function resolveSystemTheme(): "dark" | "light" {
   if (typeof window === "undefined") return "dark";
@@ -16,7 +17,15 @@ function resolveSystemTheme(): "dark" | "light" {
 function readStored(): Theme {
   if (typeof window === "undefined") return "dark";
   try {
-    const v = localStorage.getItem(STORAGE_KEY);
+    let v = localStorage.getItem(STORAGE_KEY);
+    if (v === null) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy !== null) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        v = legacy;
+      }
+    }
     if (v === "light" || v === "dark" || v === "system") return v;
   } catch {}
   return "dark";
@@ -108,6 +117,14 @@ export const THEME_BOOTSTRAP_SCRIPT = `
 (function() {
   try {
     var v = localStorage.getItem('${STORAGE_KEY}');
+    if (v === null) {
+      var legacy = localStorage.getItem('${LEGACY_STORAGE_KEY}');
+      if (legacy !== null) {
+        localStorage.setItem('${STORAGE_KEY}', legacy);
+        localStorage.removeItem('${LEGACY_STORAGE_KEY}');
+        v = legacy;
+      }
+    }
     var theme = (v === 'light' || v === 'dark' || v === 'system') ? v : 'dark';
     var resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')

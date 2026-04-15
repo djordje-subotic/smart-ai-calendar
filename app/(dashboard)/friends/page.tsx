@@ -118,7 +118,7 @@ export default function FriendsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold tracking-tight">Friends</h2>
-            <p className="text-sm text-muted-foreground">{friends.length} friend{friends.length !== 1 ? "s" : ""} on Kron</p>
+            <p className="text-sm text-muted-foreground">{friends.length} friend{friends.length !== 1 ? "s" : ""} on Krowna</p>
           </div>
           <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
             <Users className="h-5 w-5 text-primary-foreground" />

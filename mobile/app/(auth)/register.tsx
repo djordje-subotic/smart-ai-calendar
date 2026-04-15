@@ -35,7 +35,7 @@ export default function RegisterScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-          <Text style={s.logo}>kron</Text>
+          <Text style={s.logo}>krowna</Text>
           <Text style={s.tagline}>YOUR AI TIME MANAGER</Text>
 
           {/* Benefits grid */}

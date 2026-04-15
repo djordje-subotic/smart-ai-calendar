@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Svg, { Path, Circle, Rect, Defs, LinearGradient, Stop } from "react-native-svg";
 import { colors } from "../constants/colors";
 
-interface KronLogoProps {
+interface KrownaLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   showText?: boolean;
   showTagline?: boolean;
@@ -10,7 +10,7 @@ interface KronLogoProps {
 
 const SIZES = { sm: 24, md: 32, lg: 40, xl: 56 };
 
-export function KronLogo({ size = "md", showText = true, showTagline = false }: KronLogoProps) {
+export function KrownaLogo({ size = "md", showText = true, showTagline = false }: KrownaLogoProps) {
   const s = SIZES[size];
 
   return (
@@ -51,7 +51,8 @@ export function KronLogo({ size = "md", showText = true, showTagline = false }: 
       </Svg>
       {showText && (
         <View>
-          <Text style={[styles.logoText, size === "xl" && { fontSize: 28 }, size === "lg" && { fontSize: 22 }]}>kron</Text>
+          {/* Tightened type sizing — keeps the wordmark balanced next to the crown. */}
+          <Text style={[styles.logoText, size === "xl" && { fontSize: 24 }, size === "lg" && { fontSize: 20 }]}>krowna</Text>
           {showTagline && <Text style={styles.tagline}>RULE YOUR TIME</Text>}
         </View>
       )}
@@ -60,7 +61,7 @@ export function KronLogo({ size = "md", showText = true, showTagline = false }: 
 }
 
 // Small crown icon for tab bars and badges
-export function KronCrown({ size = 20, color = colors.primary }: { size?: number; color?: string }) {
+export function KrownaCrown({ size = 20, color = colors.primary }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -78,6 +79,6 @@ export function KronCrown({ size = 20, color = colors.primary }: { size?: number
 
 const styles = StyleSheet.create({
   container: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoText: { fontSize: 18, fontWeight: "900", color: colors.primary, letterSpacing: -1.5 },
+  logoText: { fontSize: 16, fontWeight: "900", color: colors.primary, letterSpacing: -1.2 },
   tagline: { fontSize: 8, fontWeight: "700", color: colors.muted, letterSpacing: 3, marginTop: 1 },
 });

@@ -136,7 +136,7 @@ export function CalendarSubscriptionsPanel() {
           <Link2 className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
           <p className="text-sm font-medium">No calendars connected</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Bring your Apple, Outlook, or any ICS feed into Kron.
+            Bring your Apple, Outlook, or any ICS feed into Krowna.
           </p>
         </div>
       ) : (

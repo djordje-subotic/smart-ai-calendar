@@ -1,4 +1,4 @@
-# Kron — Manual QA Test Plan
+# Krowna — Manual QA Test Plan
 
 Run through this checklist before every production deploy. Any red mark = do not ship.
 
@@ -99,7 +99,7 @@ Run through this checklist before every production deploy. Any red mark = do not
 ### Voice (Chrome/Edge only)
 - [ ] Mic button records when empty input
 - [ ] Transcribed text fills input
-- [ ] "Hey Kron" mode toggle persists across refresh
+- [ ] "Hey Krowna" mode toggle persists across refresh
 - [ ] Wake word triggers listening, activation beep plays
 - [ ] After command, success chime plays, event created
 
@@ -282,9 +282,9 @@ Run through this checklist before every production deploy. Any red mark = do not
 - [ ] 3-Day view shows rolling 3-day window
 
 ### Icons + splash
-- [ ] App icon on home screen shows Kron crown
+- [ ] App icon on home screen shows Krowna crown
 - [ ] Splash screen on cold boot shows branded dark background + crown
-- [ ] Notification icon on Android is the monochrome Kron silhouette
+- [ ] Notification icon on Android is the monochrome Krowna silhouette
 
 ---
 
@@ -313,7 +313,7 @@ Run through this checklist before every production deploy. Any red mark = do not
 
 - [ ] View source of `/` → contains OpenGraph + Twitter meta tags
 - [ ] `/opengraph-image` renders a 1200×630 branded image
-- [ ] `/icon` returns a 32×32 PNG with Kron branding
+- [ ] `/icon` returns a 32×32 PNG with Krowna branding
 - [ ] `/apple-icon` returns 180×180 PNG
 - [ ] `/icon-192.png`, `/icon-512.png`, `/icon-maskable-512.png` all return valid images
 - [ ] `<link rel="manifest">` points to `/manifest.json` which loads
@@ -345,7 +345,7 @@ If any of these break, do not ship:
 
 After every Vercel deploy + mobile build promotion:
 
-- [ ] `curl https://kron.app/api/ai/chat` returns 401 (auth guard live)
+- [ ] `curl https://krowna.com/api/ai/chat` returns 401 (auth guard live)
 - [ ] Lemon Squeezy webhook URL reachable, returns 401 on unsigned request
 - [ ] Vercel logs show no middleware errors for first 15 min
 - [ ] Landing page loads under 2s (Lighthouse mobile score ≥ 85)

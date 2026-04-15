@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate all Kron-branded mobile icons from a single SVG source.
+ * Generate all Krowna-branded mobile icons from a single SVG source.
  *
  * Outputs (all PNG, into ./assets):
  *   icon.png           1024×1024  — iOS app icon
@@ -137,7 +137,7 @@ async function render(svg, outPath, pngSize) {
   console.log(`  ✓ ${outPath.replace(assetsDir, "assets")} (${pngSize}×${pngSize})`);
 }
 
-console.log(`Generating Kron mobile icons into ${assetsDir} …`);
+console.log(`Generating Krowna mobile icons into ${assetsDir} …`);
 await render(appIconSvg(1024), resolve(assetsDir, "icon.png"), 1024);
 await render(adaptiveForegroundSvg(1024), resolve(assetsDir, "adaptive-icon.png"), 1024);
 await render(splashSvg(1024), resolve(assetsDir, "splash-icon.png"), 1024);

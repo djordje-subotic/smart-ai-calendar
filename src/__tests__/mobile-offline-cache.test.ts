@@ -28,7 +28,7 @@ const SecureStoreShim = {
 type CacheEntry<T> = { value: T; cachedAt: number; expiresAt: number };
 type CacheOptions = { ttl?: number };
 
-const PREFIX = "kron-cache:";
+const PREFIX = "krowna-cache:";
 const MAX_SECURE_STORE_BYTES = 1800;
 
 function keyFor(name: string) {
@@ -140,7 +140,7 @@ describe("setCached / getCached", () => {
   });
 
   it("returns null on malformed JSON", async () => {
-    store.set("kron-cache:corrupt", "{{not valid json");
+    store.set("krowna-cache:corrupt", "{{not valid json");
     expect(await getCached("corrupt")).toBeNull();
   });
 
@@ -152,7 +152,7 @@ describe("setCached / getCached", () => {
 
   it("uses the PREFIX namespace so raw keys don't collide", async () => {
     await setCached("test", 42);
-    expect(store.has("kron-cache:test")).toBe(true);
+    expect(store.has("krowna-cache:test")).toBe(true);
     expect(store.has("test")).toBe(false);
   });
 });

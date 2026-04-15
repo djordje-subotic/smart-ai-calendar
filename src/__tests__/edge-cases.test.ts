@@ -136,7 +136,7 @@ describe("Edge Cases - Security", () => {
   it("API key should not be exposed in client code", () => {
     const components = [
       "src/components/ai/AskAIDialog.tsx",
-      "src/components/ai/HeyKronIndicator.tsx",
+      "src/components/ai/HeyKrownaIndicator.tsx",
     ];
     for (const comp of components) {
       const code = readFile(comp);

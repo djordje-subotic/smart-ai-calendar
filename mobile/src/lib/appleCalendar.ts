@@ -6,7 +6,7 @@
  * On Android it talks to the system Calendar Provider (Google, Samsung,
  * any configured account).
  *
- * We only READ from the native calendar and mirror events into Kron with a
+ * We only READ from the native calendar and mirror events into Krowna with a
  * `source: "device"` tag. Writing back is intentionally kept out of scope —
  * that would fight Google Calendar sync when both are enabled.
  */
@@ -44,7 +44,7 @@ export async function listNativeCalendars(): Promise<NativeCalendar[]> {
 
 /**
  * Pull events from the native calendar over a reasonable window (30 days
- * back, 90 days ahead) and upsert them into Kron. Returns the number of
+ * back, 90 days ahead) and upsert them into Krowna. Returns the number of
  * events synced.
  */
 export async function syncNativeCalendar(

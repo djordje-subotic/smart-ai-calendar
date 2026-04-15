@@ -15,7 +15,7 @@ import {
 } from "@/src/lib/calendar/utils";
 import { ChevronLeft, ChevronRight, Plus, Menu } from "lucide-react";
 import { NotificationBell } from "@/src/components/social/NotificationBell";
-import { HeyKronIndicator } from "@/src/components/ai/HeyKronIndicator";
+import { HeyKrownaIndicator } from "@/src/components/ai/HeyKrownaIndicator";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -127,7 +127,7 @@ export function Header() {
           ))}
         </div>
 
-        <HeyKronIndicator />
+        <HeyKrownaIndicator />
         <NotificationBell />
 
         {/* New Event */}

@@ -1,17 +1,17 @@
-// Kron service worker
+// Krowna service worker
 //
 // Lightweight SW focused on:
 //   1. Showing event-reminder notifications when the tab is backgrounded
 //      (we post a message from the page to "schedule" a reminder; the SW
 //      runs a setTimeout so the notification fires even if the tab loses
 //      focus — the SW can stay alive longer than the page).
-//   2. Making Kron installable as a PWA (minimal fetch handler).
+//   2. Making Krowna installable as a PWA (minimal fetch handler).
 //
 // We deliberately skip push subscriptions / VAPID for now — that needs a
 // server-side push service, which adds infra cost. The in-page scheduler +
 // this SW covers the 90% case (browser open but tab backgrounded).
 
-const CACHE_NAME = "kron-v1";
+const CACHE_NAME = "krowna-v1";
 
 self.addEventListener("install", (event) => {
   // Activate immediately so users get the new SW without hard-refresh
@@ -92,7 +92,7 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      // Focus an existing Kron tab if available
+      // Focus an existing Krowna tab if available
       for (const client of all) {
         if (client.url.includes(self.location.origin)) {
           await client.focus();

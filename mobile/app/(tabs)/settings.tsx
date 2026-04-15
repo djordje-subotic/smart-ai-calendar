@@ -8,7 +8,7 @@ import { useAuthStore } from "../../src/stores/authStore";
 import { router } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import { colors } from "../../src/constants/colors";
-import { CreditPurchaseModal } from "../../src/components/CreditPurchaseModal";
+// import { CreditPurchaseModal } from "../../src/components/CreditPurchaseModal"; // hidden for MVP
 import { useTheme } from "../../src/hooks/useTheme";
 import { listNativeCalendars, syncNativeCalendar, clearSyncedNativeEvents } from "../../src/lib/appleCalendar";
 
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
   const { theme, setTheme } = useTheme();
   const [usage, setUsage] = useState<{ plan: string; used: number; limit: number; bonus: number } | null>(null);
-  const [creditModalOpen, setCreditModalOpen] = useState(false);
+  // const [creditModalOpen, setCreditModalOpen] = useState(false); // hidden for MVP
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [googleConnected, setGoogleConnected] = useState(false);
@@ -104,7 +104,7 @@ export default function SettingsScreen() {
       if (cals.length === 0) {
         Alert.alert(
           "No access",
-          "Kron couldn't read your device calendars. Enable calendar permission in Settings."
+          "Krowna couldn't read your device calendars. Enable calendar permission in Settings."
         );
         return;
       }
@@ -169,10 +169,14 @@ export default function SettingsScreen() {
               <View style={s.progressBg}>
                 <View style={[s.progressFill, { width: `${Math.min((usage.used / usage.limit) * 100, 100)}%` }]} />
               </View>
+              {/* Buy extra credits — hidden for MVP (subscription-only).
+                  Re-enable with CreditPurchaseModal once LS pack variants are live. */}
+              {/*
               <TouchableOpacity style={s.buyCreditsBtn} onPress={() => setCreditModalOpen(true)} activeOpacity={0.8}>
                 <Ionicons name="flash" size={14} color={colors.primary} />
                 <Text style={s.buyCreditsText}>Buy extra credits</Text>
               </TouchableOpacity>
+              */}
             </View>
           </View>
         )}
@@ -296,11 +300,13 @@ export default function SettingsScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
+      {/* CreditPurchaseModal — hidden for MVP (subscription-only). Restore when credit packs are re-enabled.
       <CreditPurchaseModal
         visible={creditModalOpen}
         onClose={() => setCreditModalOpen(false)}
         onPurchased={() => loadData()}
       />
+      */}
     </SafeAreaView>
   );
 }

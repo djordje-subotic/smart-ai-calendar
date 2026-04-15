@@ -27,25 +27,18 @@ export async function GET() {
             left: -100,
           }}
         />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 14,
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
           <div style={{ fontSize: 200, display: "flex" }}>👑</div>
           <div
             style={{
               display: "flex",
-              fontSize: 112,
+              fontSize: 86,
               fontWeight: 900,
               color: "#FBBF24",
               letterSpacing: -4,
             }}
           >
-            kron
+            krowna
           </div>
         </div>
       </div>

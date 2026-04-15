@@ -35,7 +35,7 @@ export function DailyBriefing() {
           <div className="flex h-6 w-6 items-center justify-center rounded-lg gradient-primary">
             <Sparkles className="h-3 w-3 text-white" />
           </div>
-          <span className="text-xs font-semibold">Kron AI Briefing</span>
+          <span className="text-xs font-semibold">Krowna AI Briefing</span>
         </div>
         <Button
           variant="ghost"

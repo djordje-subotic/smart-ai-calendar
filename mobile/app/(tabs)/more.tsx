@@ -6,7 +6,7 @@ import { supabase } from "../../src/lib/supabase";
 import { useAuthStore } from "../../src/stores/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/constants/colors";
-import { KronLogo } from "../../src/components/KronLogo";
+import { KrownaLogo } from "../../src/components/KrownaLogo";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 const MENU: Array<{ icon: IoniconsName; label: string; desc: string; route: string; color: string }> = [
@@ -41,7 +41,7 @@ export default function MoreScreen() {
         {/* Header */}
         <View style={s.header}>
           <Text style={s.headerTitle}>More</Text>
-          <KronLogo size="sm" />
+          <KrownaLogo size="sm" />
         </View>
 
         {/* User card */}

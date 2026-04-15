@@ -45,7 +45,7 @@ export default function ErrorBoundary({
 
         <p className="mt-6 text-xs text-muted-foreground">
           If this keeps happening,{" "}
-          <a href="mailto:support@kron.app" className="text-primary hover:underline">contact support</a>
+          <a href="mailto:support@krowna.com" className="text-primary hover:underline">contact support</a>
         </p>
       </div>
     </div>

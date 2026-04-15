@@ -51,7 +51,7 @@ export function EnergyLearningPanel() {
         <div className="flex-1">
           <p className="text-sm font-semibold">Learn my energy pattern</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Kron looks at when you actually show up for events and finish tasks, then tunes
+            Krowna looks at when you actually show up for events and finish tasks, then tunes
             scheduling to match your peaks.
           </p>
         </div>
@@ -90,7 +90,7 @@ export function EnergyLearningPanel() {
           ) : (
             <p className="text-xs text-muted-foreground">
               {result.reason === "not_enough_data"
-                ? "Not enough history yet — use Kron for a couple of weeks and try again."
+                ? "Not enough history yet — use Krowna for a couple of weeks and try again."
                 : "Couldn't update right now. Try again in a moment."}
             </p>
           )}

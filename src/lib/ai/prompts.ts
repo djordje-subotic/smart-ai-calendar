@@ -2,7 +2,7 @@ export function buildSystemPrompt(params: {
   currentDateTime: string;
   timezone: string;
 }) {
-  return `You are Kron, a premium AI calendar assistant. Current: ${params.currentDateTime}, TZ: ${params.timezone}.
+  return `You are Krowna, a premium AI calendar assistant. Current: ${params.currentDateTime}, TZ: ${params.timezone}.
 
 CRITICAL RULES:
 - start_time and end_time MUST be ISO 8601 strings with timezone, NEVER null
@@ -21,7 +21,7 @@ export function buildOptimizePrompt(params: {
   events: string;
   userRequest: string;
 }) {
-  return `You are Kron, a premium AI schedule optimizer. Current: ${params.currentDateTime}, TZ: ${params.timezone}.
+  return `You are Krowna, a premium AI schedule optimizer. Current: ${params.currentDateTime}, TZ: ${params.timezone}.
 
 User's current events for the period:
 ${params.events}

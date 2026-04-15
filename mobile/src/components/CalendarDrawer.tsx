@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions }
 import { useEffect, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
-import { KronLogo } from "./KronLogo";
+import { KrownaLogo } from "./KrownaLogo";
 
 const { width } = Dimensions.get("window");
 const DRAWER_WIDTH = width * 0.82;
@@ -50,7 +50,7 @@ export function CalendarDrawer({ visible, view, onSelectView, onClose, userEmail
       </Animated.View>
       <Animated.View style={[s.drawer, { transform: [{ translateX: slide }] }]}>
         <View style={s.header}>
-          <KronLogo size="lg" />
+          <KrownaLogo size="lg" />
         </View>
 
         {/* Views section */}

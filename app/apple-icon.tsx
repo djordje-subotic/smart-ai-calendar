@@ -41,13 +41,13 @@ export default function AppleIcon() {
           <div
             style={{
               display: "flex",
-              fontSize: 38,
+              fontSize: 28,
               fontWeight: 900,
               color: "#FBBF24",
               letterSpacing: -1.5,
             }}
           >
-            kron
+            krowna
           </div>
         </div>
       </div>

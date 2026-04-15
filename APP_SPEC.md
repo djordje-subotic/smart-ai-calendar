@@ -1,10 +1,10 @@
-# Kron — Rule Your Time
+# Krowna — Rule Your Time
 
 ## App Vision
-Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar on the market. It combines the familiar feel of Google Calendar with powerful AI capabilities that no competitor offers. The goal: users should never have to manually organize their schedule again.
+Krowna is a premium AI-powered calendar app that aims to be the #1 smart calendar on the market. It combines the familiar feel of Google Calendar with powerful AI capabilities that no competitor offers. The goal: users should never have to manually organize their schedule again.
 
 ## Brand Identity
-- **Name**: Kron (from "krona" = crown + "chronos" = time)
+- **Name**: Krowna (from *reign* — to rule — paired with the crown logo)
 - **Tagline**: "Rule your time."
 - **Logo**: Golden crown with 3 points, gem dots, gradient (#D97706 → #F59E0B → #FBBF24)
 - **Color palette**: Dark theme with amber/gold accents. Background #1a1520 style.
@@ -31,7 +31,7 @@ Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar 
 ## Tech Stack (Mobile)
 - Expo SDK 54, React Native 0.81, TypeScript, Expo Router
 - Supabase with `expo-secure-store` for session persistence
-- Custom `KronLogo` SVG component (`react-native-svg`) — matches web branding
+- Custom `KrownaLogo` SVG component (`react-native-svg`) — matches web branding
 - Ionicons (`@expo/vector-icons`) for UI icons — no emojis
 - `expo-notifications` for push notifications + reminders
 - `expo-av` for audio recording (voice input)
@@ -43,7 +43,7 @@ Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar 
 - `@react-native-community/datetimepicker` for date/time selection
 - DiceBear API for avatar generation (96 illustrated options)
 - Hybrid AI proxied through web `/api/ai/*` endpoints
-- Deep linking via `kron://` scheme
+- Deep linking via `krowna://` scheme
 
 ## Core Features
 
@@ -60,7 +60,7 @@ Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar 
 - **AI metadata**: stores original prompt and confidence score for AI-created events
 - Events scale visually by duration: 15min=tiny, 30min=compact, 1h=normal, 2h+=expanded
 
-### 3. AI Assistant (Kron AI)
+### 3. AI Assistant (Krowna AI)
 - **Chat interface** (⌘K or sidebar button): Multi-turn conversation with memory
 - **Context-aware**: AI sees user's existing events for next 30 days
 - **Natural language**: "Stavi mi trening svaki dan u 7" → creates daily recurring event
@@ -90,7 +90,7 @@ Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar 
 - Completions stored in database per day, loaded from server (not just local state)
 
 ### 7. Daily AI Briefing
-- On Today page: "Kron AI Briefing" card
+- On Today page: "Krowna AI Briefing" card
 - Click to generate: AI summarizes your day in 2-3 sentences
 - Considers existing events, suggests if day is empty
 
@@ -141,8 +141,8 @@ Kron is a premium AI-powered calendar app that aims to be the #1 smart calendar 
 
 ## Calendar Integrations
 - **Google Calendar**: bidirectional sync via OAuth 2.0 (web + mobile)
-- **Apple Calendar / any CalDAV source**: ICS URL subscriptions (web) — paste a public `webcal://` or `https://` link and Kron fetches + upserts every 6h
-- **Native device calendar** (mobile): `expo-calendar` → iOS EventKit + Android Calendar Provider; reads all connected accounts (iCloud, Google, Outlook) and mirrors into Kron with `source: "device"`
+- **Apple Calendar / any CalDAV source**: ICS URL subscriptions (web) — paste a public `webcal://` or `https://` link and Krowna fetches + upserts every 6h
+- **Native device calendar** (mobile): `expo-calendar` → iOS EventKit + Android Calendar Provider; reads all connected accounts (iCloud, Google, Outlook) and mirrors into Krowna with `source: "device"`
 - **Outlook**: supported via ICS subscription (MS publishes ICS URL per calendar)
 - All external events tagged with `subscription_id` + `external_uid` for idempotent resync and sweep-deletion
 
@@ -184,7 +184,7 @@ smart-ai-calendar/
 │   │   ├── auth.ts             # login, register, logout, getUser
 │   │   └── google-calendar.ts  # OAuth, sync, disconnect, generateMeetLink
 │   ├── components/             # 32 components
-│   │   ├── ai/                 # AIInputBar, AskAIDialog, CreditPurchase, DailyBriefing, FocusMode, HeyKronIndicator, NudgeBanner, OptimizePanel, ReplanButton, SmartTemplates, WeeklyReport
+│   │   ├── ai/                 # AIInputBar, AskAIDialog, CreditPurchase, DailyBriefing, FocusMode, HeyKrownaIndicator, NudgeBanner, OptimizePanel, ReplanButton, SmartTemplates, WeeklyReport
 │   │   ├── calendar/           # CalendarGrid, CalendarHeatmap, DayView, EnergyIndicator, EventCard, EventModal, MiniCalendar, ScheduleScore, UpcomingEvents, WeekView
 │   │   ├── tasks/              # TaskPanel (modal creation), TaskCardInline
 │   │   ├── social/             # InvitePanel (timezone-aware), NotificationBell
@@ -192,7 +192,7 @@ smart-ai-calendar/
 │   │   └── layout/             # Header, LandingPage, Logo, MobileDrawer, Sidebar
 │   ├── lib/                    # Supabase (server+client), AI prompts/schemas, calendar utils, voice, sounds, google-calendar
 │   ├── stores/                 # Zustand: calendarStore, uiStore (with mobile drawer state)
-│   ├── hooks/                  # useEvents, useVoice, useHeyKron
+│   ├── hooks/                  # useEvents, useVoice, useHeyKrowna
 │   ├── types/                  # event (meeting_url), task, habit, ai (AIAction)
 │   ├── constants/              # colors, credits
 │   └── __tests__/              # 10 test suites, 175 tests
@@ -211,7 +211,7 @@ smart-ai-calendar/
 ## Pages & Navigation
 **Web sidebar:** Calendar → Today → Habits → AI Tools → Friends → Settings
 **Web additional:** /profile (from sidebar widget)
-**Mobile tabs (5 visible):** Calendar → Today → Kron AI → Habits → More
+**Mobile tabs (5 visible):** Calendar → Today → Krowna AI → Habits → More
 **Mobile hidden (5 via navigation):** Tasks, Profile, Friends, Tools, Settings
 
 ## Personal Time Manager Features
@@ -247,18 +247,18 @@ smart-ai-calendar/
 - Human-readable labels: "Every day", "Every Mon, Wed", "Every month"
 - Shown on all event sizes (compact = icon only, large = icon + label)
 
-### 15. "Hey Kron" Voice Assistant (Chrome only)
+### 15. "Hey Krowna" Voice Assistant (Chrome only)
 - Always-listening mode activated from header toggle button
 - Two-phase recognition: Phase 1 (wake word) → Phase 2 (command)
-- Wake word detection: fuzzy matching "hey kron" + 50+ variations (he cron, hey crown, hey chrome, etc.)
+- Wake word detection: fuzzy matching "hey krowna" + 50+ variations (he cron, hey crown, hey chrome, etc.)
 - Sound feedback: activation beep when wake word detected, success chime when done
 - Auto-timeout: 8 seconds to say command after wake word
 - Auto-creates events without manual confirmation
 - Persisted on/off state in localStorage
 
 ### 16. Text-to-Speech (AI Voice)
-- Kron speaks AI responses aloud using browser SpeechSynthesis API
-- Activated automatically in Hey Kron mode
+- Krowna speaks AI responses aloud using browser SpeechSynthesis API
+- Activated automatically in Hey Krowna mode
 - Prefers Google English voice, falls back to system default
 
 ### 17. UI Sound Effects
@@ -288,10 +288,10 @@ smart-ai-calendar/
 - Sync now button in Settings
 
 ### 20. Voice Assistant (Always-On Mode)
-- No wake word needed — when enabled, Kron listens continuously
+- No wake word needed — when enabled, Krowna listens continuously
 - Toggle "Voice on/off" button in header (Chrome only)
-- Flow: User speaks → Kron processes → Kron speaks response → listens again
-- Recognition paused while Kron speaks (prevents self-hearing)
+- Flow: User speaks → Krowna processes → Krowna speaks response → listens again
+- Recognition paused while Krowna speaks (prevents self-hearing)
 - Prefers premium TTS voices: Google UK English Female, Samantha (macOS), Daniel (macOS)
 - Always speaks English for consistent quality (Serbian TTS is poor in browsers)
 - Floating panel appears during interaction showing: sound waves, transcript, chat history
@@ -316,7 +316,7 @@ Full profile page with 11 sections, split into "Profile Info" and "AI Personaliz
 - Personal motto
 
 **AI Personalization:**
-- Kron's personality: 4 motivation styles (Friendly, Strict Coach, Professional, Hype Man) — changes AI tone
+- Krowna's personality: 4 motivation styles (Friendly, Strict Coach, Professional, Hype Man) — changes AI tone
 - About you: occupation + bio textarea
 - Goals: 12 preset chips + custom (Stay fit, Learn skills, Read more...)
 - Life priorities: what matters most, AI protects time for these
@@ -353,14 +353,14 @@ Full profile page with 11 sections, split into "Profile Info" and "AI Personaliz
 - **Settings**: "Extra AI Credits" section shows balance + purchase options
 - `credit_purchases` table tracks purchase history with RLS
 
-### 26. Voice-First Accessibility (Hey Kron)
+### 26. Voice-First Accessibility (Hey Krowna)
 - `voiceMode` flag on `chatWithAI()` changes AI behavior for spoken interaction
 - Voice mode responses: short (2-3 sentences), spoken-friendly, no formatting
 - Screen reader commands: "What's next?", "Read my day", "How many events?", "Am I free at 3?"
 - AI addresses user by name, references motto for motivation
 - Serbian speech recognition (`sr-RS`) as primary language
 - Voice preference persisted in database (`voice_enabled` column), auto-activates on login
-- Blind users can use Kron fully without seeing the screen
+- Blind users can use Krowna fully without seeing the screen
 
 ## Database Schema Additions
 ```
@@ -450,7 +450,7 @@ LS_VARIANT_PLAN_ULTRA
 
 # Email (Resend)
 RESEND_API_KEY                # Without: emails logged to console
-EMAIL_FROM                    # e.g. "Kron <hello@kron.app>"
+EMAIL_FROM                    # e.g. "Krowna <hello@krowna.com>"
 
 # --- Mobile (mobile/.env.local) ---
 EXPO_PUBLIC_SUPABASE_URL
@@ -522,7 +522,7 @@ EXPO_PUBLIC_API_URL           # URL of deployed web for AI calls
 - Permission request on first login
 - Push token stored in profiles table for server-side push
 - Event reminders scheduled locally (15 min before)
-- Android notification channel with Kron branding
+- Android notification channel with Krowna branding
 - Notification handler: shows alert, plays sound, sets badge
 
 ### 34. Mobile Voice (TTS)
@@ -546,8 +546,8 @@ EXPO_PUBLIC_API_URL           # URL of deployed web for AI calls
 
 ### 37. Mobile App (Expo SDK 54) — Production Ready
 Feature parity with web:
-- **Kron logo**: SVG crown with golden gradient (identical to web)
-- **Ionicons tab bar**: Calendar, Today, Kron AI (highlighted center), Habits, More
+- **Krowna logo**: SVG crown with golden gradient (identical to web)
+- **Ionicons tab bar**: Calendar, Today, Krowna AI (highlighted center), Habits, More
 - **Premium auth**: login/register with feature pills, free plan includes list
 - **Google Calendar-style UI**: MonthPicker (horizontal chips), CalendarDrawer (side menu), FAB +, view switcher
 - **Calendar Views**:
@@ -558,7 +558,7 @@ Feature parity with web:
 - **Event Quick Actions**: Long-press to reveal Edit/Move/Duplicate/Delete bottom sheet
 - **Drag-and-drop**: Long-press + drag on Day view (15-min snap, haptic feedback)
 - **Today dashboard**: Stats cards, schedule score, daily briefing, nudges, replan button, upcoming events, invites
-- **AI Chat**: Full parity with web including voice mode, event cards, action cards, Hey Kron button
+- **AI Chat**: Full parity with web including voice mode, event cards, action cards, Hey Krowna button
 - **Habits**: 7-day heatmap, streaks, optimistic toggle
 - **Tasks**: CRUD with priorities, colors, optimistic updates
 - **Profile**: 11 sections — avatar picker (96 DiceBear avatars), motivation style, goals, habits, hobbies, priorities, constraints, ideal day, birthday, city
@@ -568,10 +568,10 @@ Feature parity with web:
 - **Social Invites**: Accept/Decline/Counter with timezone warnings
 - **Notifications Bell**: In-app modal with read/unread, auto-polling
 - **Push Notifications**: `expo-notifications` with tap routing to correct screen
-- **Deep Linking**: `kron://event/X`, `kron://friend/X`, `kron://today`, etc.
+- **Deep Linking**: `krowna://event/X`, `krowna://friend/X`, `krowna://today`, etc.
 - **Haptic Feedback**: Light/medium/heavy impacts, success/warning/error on all key actions
 
-### 38. Hey Kron Voice (Full Voice Assistant)
+### 38. Hey Krowna Voice (Full Voice Assistant)
 - **Web**: Web Speech API (free, native browser STT) for Chrome/Edge
 - **Mobile**: `expo-av` audio recording → Whisper API (`/api/ai/transcribe`) → text
 - **TTS on both platforms**: Web SpeechSynthesis / `expo-speech` for AI voice responses
@@ -587,7 +587,7 @@ Feature parity with web:
 - `useOptimisticState` hook for reusable optimistic pattern
 
 ### 40. Deep Linking & Push Handlers
-- `kron://` scheme configured on iOS and Android
+- `krowna://` scheme configured on iOS and Android
 - `handleDeepLink()` routes URLs to appropriate screens
 - `setupNotificationHandlers()` — tap notification routes based on type:
   - event_reminder → /today
@@ -636,7 +636,7 @@ Feature parity with web:
 - `expo-calendar` with calendar permission flow
 - Reads from iOS EventKit (iCloud, Apple Cal, any CalDAV account user has added)
 - Reads from Android Calendar Provider (Google, Samsung, any configured account)
-- Upserts into Kron `events` with `source: "device"`, tagged by `external_uid`
+- Upserts into Krowna `events` with `source: "device"`, tagged by `external_uid`
 - Configurable window (default 30 days back, 90 days ahead)
 - Disconnect button removes all device-sourced events
 
@@ -644,7 +644,7 @@ Feature parity with web:
 - `src/lib/ics.ts` — minimal RFC 5545 parser: VEVENT blocks, line unfolding, TZID/Z/DATE handling, webcal:// normalization
 - `calendar_subscriptions` table with per-row sync state + error tracking
 - Events upserted by `(subscription_id, external_uid)` unique index
-- Stale event sweep on every resync (events removed upstream also removed in Kron)
+- Stale event sweep on every resync (events removed upstream also removed in Krowna)
 - Limited to ±30d past + 1yr future to keep events table tidy
 
 ### 48. AI Energy Profile Learning
@@ -677,12 +677,12 @@ Feature parity with web:
 - Footer links on landing page
 
 ### 52. Emails (Resend)
-- `src/lib/email.ts` with branded HTML shell (dark background, amber accent, Kron header)
+- `src/lib/email.ts` with branded HTML shell (dark background, amber accent, Krowna header)
 - Templates: welcome (on signup), bookingGuest (to guest), bookingHost (to host)
 - Fire-and-forget (never blocks signup/booking on email failure)
 - Dev mode: logs subject + recipient to console when no `RESEND_API_KEY`
 
-## What Makes Kron Best-in-Class
+## What Makes Krowna Best-in-Class
 1. **Personal AI time manager** — not just a calendar, your AI assistant for time
 2. **Hybrid AI** — GPT-4o mini + Claude auto-routing for optimal cost/quality
 3. **Prompt caching** — 90% Claude input cost savings via Anthropic cache
@@ -706,7 +706,7 @@ Feature parity with web:
 21. **Energy tracking** — peak focus vs low energy awareness
 22. **Habits with streaks** — Duolingo-style engagement with optimistic UI
 23. **Schedule scoring** — gamified time management
-24. **TTS + sound effects** — Kron speaks back, satisfying audio feedback
+24. **TTS + sound effects** — Krowna speaks back, satisfying audio feedback
 25. **Haptic feedback** — tactile response on all key mobile actions
 26. **Google Calendar sync** — import existing events, OAuth flow on web + mobile
 27. **Premium gold branding** — distinctive visual identity, SVG logo on both platforms
@@ -714,7 +714,7 @@ Feature parity with web:
 29. **Google Calendar-style mobile UI** — MonthPicker, CalendarDrawer, FAB, 3 views
 30. **Drag-and-drop events** — long-press + drag on mobile Day view with haptic snap
 31. **Event Quick Actions** — bottom sheet on long-press (Edit/Move/Duplicate/Delete)
-32. **Deep linking** — `kron://` scheme routes to any screen
+32. **Deep linking** — `krowna://` scheme routes to any screen
 33. **Push notifications** — with tap-to-route handler on mobile
 34. **Optimistic UI** — instant feedback, auto-revert on error
 35. **Production test suite** — 175 automated tests across 10 suites
@@ -744,12 +744,12 @@ Feature parity with web:
 - [x] **Increased plan limits** — Free 30, Pro 500, Ultra 5000
 - [x] **Stripe payment integration** — with dev-mode fallback
 - [x] **Whisper STT** — voice transcription for mobile
-- [x] **Deep linking** — `kron://` scheme with route handler
+- [x] **Deep linking** — `krowna://` scheme with route handler
 - [x] **Optimistic UI updates** — tasks, habits, events
 - [x] **Event Quick Actions** — long-press bottom sheet (Edit/Move/Duplicate/Delete)
 - [x] **Drag-and-drop events** on mobile Day view (long-press + drag, 15-min snap)
 - [x] **Google Calendar-style mobile UI** — MonthPicker, CalendarDrawer, FAB, Schedule/Day/Month views
-- [x] **Mobile Kron branding** — SVG logo, Ionicons (no emojis)
+- [x] **Mobile Krowna branding** — SVG logo, Ionicons (no emojis)
 - [x] **Haptic feedback** — all key actions on mobile
 - [x] **Mobile event CRUD modal** — full create/edit/delete
 - [x] **Mobile notification bell** — in-app modal with read/unread
@@ -772,7 +772,7 @@ Feature parity with web:
 - [x] **Mobile Week + 3-Day hourly views** — horizontal grid with auto-scroll to 7am
 - [x] **Mobile light theme** — theme-aware palette, persistent toggle, reactive StatusBar/background
 - [x] **Mobile local notifications** — `expo-notifications` auto-scheduled for next 24h of events
-- [x] **Mobile brand icons** — generated from SVG via sharp (`scripts/generate-icons.mjs`), Kron crown + amber
+- [x] **Mobile brand icons** — generated from SVG via sharp (`scripts/generate-icons.mjs`), Krowna crown + amber
 - [x] **Error boundaries** — `app/error.tsx` + `app/not-found.tsx`
 - [x] **AI energy profile learning** — recomputes peak/low hours from 60-day event + task completion signal
 - [x] **Comprehensive test suite** — 175+ automated tests + manual checklist

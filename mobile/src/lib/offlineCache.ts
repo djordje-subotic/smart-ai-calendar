@@ -17,7 +17,7 @@ type CacheEntry<T> = {
   expiresAt: number;
 };
 
-const PREFIX = "kron-cache:";
+const PREFIX = "krowna-cache:";
 const MAX_SECURE_STORE_BYTES = 1800; // stay well under iOS 2KB limit
 
 export type CacheOptions = {

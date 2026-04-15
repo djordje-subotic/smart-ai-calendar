@@ -9,7 +9,8 @@ function readFile(relativePath: string): string {
 describe("Landing Page", () => {
   it("should have 12 features", () => {
     const landing = readFile("src/components/layout/LandingPage.tsx");
-    const featureMatches = landing.match(/\{ icon:/g);
+    // Match both `{ icon:` (single-line) and `{\n    icon:` (formatted)
+    const featureMatches = landing.match(/\{\s*icon:/g);
     // 12 features + 3 how-it-works steps = 15 icon references in objects
     expect(featureMatches!.length).toBeGreaterThanOrEqual(12);
   });
@@ -28,7 +29,7 @@ describe("Landing Page", () => {
     expect(landing).toContain("AppPreview");
     expect(landing).toContain("Morning Workout");
     expect(landing).toContain("Deep Work");
-    expect(landing).toContain("Kron AI");
+    expect(landing).toContain("Krowna AI");
   });
 
   it("should have pricing section with 3 plans", () => {
@@ -48,7 +49,7 @@ describe("Landing Page", () => {
     const landing = readFile("src/components/layout/LandingPage.tsx");
     expect(landing).toContain("How it works");
     expect(landing).toContain("Set up your profile");
-    expect(landing).toContain("Talk to Kron");
+    expect(landing).toContain("Talk to Krowna");
     expect(landing).toContain("Let AI handle it");
   });
 

@@ -11,17 +11,17 @@ describe("renderEmailShell", () => {
   it("wraps content in the branded HTML shell", () => {
     const html = renderEmailShell("<p>Hello</p>");
     expect(html).toContain("<p>Hello</p>");
-    expect(html).toContain("Kron"); // brand header
-    expect(html).toContain("kron.app"); // footer links
+    expect(html).toContain("Krowna"); // brand header
+    expect(html).toContain("krowna.com"); // footer links
   });
 
   it("includes a CTA button when provided", () => {
     const html = renderEmailShell("<p>Body</p>", {
-      ctaUrl: "https://kron.app/calendar",
-      ctaLabel: "Open Kron",
+      ctaUrl: "https://krowna.com/calendar",
+      ctaLabel: "Open Krowna",
     });
-    expect(html).toContain("Open Kron");
-    expect(html).toContain("https://kron.app/calendar");
+    expect(html).toContain("Open Krowna");
+    expect(html).toContain("https://krowna.com/calendar");
   });
 
   it("omits CTA button when not provided", () => {
@@ -37,20 +37,20 @@ describe("renderEmailShell", () => {
 
 describe("welcomeEmail", () => {
   it("greets the user by name when provided", () => {
-    const email = welcomeEmail({ name: "Djordje", appUrl: "https://kron.app" });
+    const email = welcomeEmail({ name: "Djordje", appUrl: "https://krowna.com" });
     expect(email.subject).toMatch(/welcome/i);
     expect(email.html).toContain("Welcome, Djordje");
     expect(email.text).toContain("Djordje");
   });
 
   it("falls back to generic greeting when name missing", () => {
-    const email = welcomeEmail({ appUrl: "https://kron.app" });
-    expect(email.html).toContain("Welcome to Kron!");
+    const email = welcomeEmail({ appUrl: "https://krowna.com" });
+    expect(email.html).toContain("Welcome to Krowna!");
   });
 
   it("links back to /calendar", () => {
-    const email = welcomeEmail({ appUrl: "https://kron.app" });
-    expect(email.html).toContain("https://kron.app/calendar");
+    const email = welcomeEmail({ appUrl: "https://krowna.com" });
+    expect(email.html).toContain("https://krowna.com/calendar");
   });
 });
 
@@ -63,7 +63,7 @@ describe("bookingGuestEmail", () => {
       guestName: "Alice",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.subject).toMatch(/Confirmed/i);
   });
@@ -74,7 +74,7 @@ describe("bookingGuestEmail", () => {
       hostName: "Bob",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("Bob");
   });
@@ -84,7 +84,7 @@ describe("bookingGuestEmail", () => {
       guestName: "Alice",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("30 minutes");
   });
@@ -94,7 +94,7 @@ describe("bookingGuestEmail", () => {
       guestName: "Alice",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("Hi Alice");
   });
@@ -105,7 +105,7 @@ describe("bookingGuestEmail", () => {
       start,
       end,
       location: "Conference Room 3",
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("Conference Room 3");
   });
@@ -121,7 +121,7 @@ describe("bookingHostEmail", () => {
       guestEmail: "alice@example.com",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("Alice");
     expect(email.html).toContain("alice@example.com");
@@ -134,7 +134,7 @@ describe("bookingHostEmail", () => {
       start,
       end,
       notes: "Discuss Q2 strategy",
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     expect(email.html).toContain("Discuss Q2 strategy");
   });
@@ -145,7 +145,7 @@ describe("bookingHostEmail", () => {
       guestEmail: "alice@example.com",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
     // Should not contain blockquote-style notes
     expect(email.html).not.toContain("background:rgba(255,255,255,0.05)");
@@ -157,9 +157,9 @@ describe("bookingHostEmail", () => {
       guestEmail: "alice@example.com",
       start,
       end,
-      appUrl: "https://kron.app",
+      appUrl: "https://krowna.com",
     });
-    expect(email.html).toContain("https://kron.app/calendar");
+    expect(email.html).toContain("https://krowna.com/calendar");
   });
 });
 
@@ -247,11 +247,11 @@ describe("sendEmail — live mode", () => {
       to: "t@ex.com",
       subject: "S",
       html: "<p>H</p>",
-      from: "Custom <custom@kron.app>",
-      replyTo: "reply@kron.app",
+      from: "Custom <custom@krowna.com>",
+      replyTo: "reply@krowna.com",
     });
     const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string);
-    expect(body.from).toBe("Custom <custom@kron.app>");
-    expect(body.reply_to).toBe("reply@kron.app");
+    expect(body.from).toBe("Custom <custom@krowna.com>");
+    expect(body.reply_to).toBe("reply@krowna.com");
   });
 });

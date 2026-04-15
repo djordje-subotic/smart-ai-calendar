@@ -4,7 +4,7 @@ import { Logo } from "@/src/components/layout/Logo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Kron collects, uses, and protects your data.",
+  description: "How Krowna collects, uses, and protects your data.",
 };
 
 const EFFECTIVE_DATE = "April 11, 2026";
@@ -33,8 +33,8 @@ export default function PrivacyPage() {
 
         <article className="prose prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-3 prose-p:text-sm prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-sm prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-primary">
           <p>
-            This Privacy Policy explains how Kron (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) collects, uses, and
-            protects your information when you use the Kron web and mobile apps. We designed Kron
+            This Privacy Policy explains how Krowna (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) collects, uses, and
+            protects your information when you use the Krowna web and mobile apps. We designed Krowna
             to collect the minimum data required to deliver the service.
           </p>
 
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
           </p>
 
           <h2>4. Sharing</h2>
-          <p>We share data only with the service providers required to run Kron:</p>
+          <p>We share data only with the service providers required to run Krowna:</p>
           <ul>
             <li><strong>Supabase</strong> — database and authentication hosting (EU/US regions).</li>
             <li><strong>OpenAI & Anthropic</strong> — AI inference for your requests.</li>
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
             Depending on where you live (EEA, UK, California, and other jurisdictions), you may
             have rights to access, correct, export, or delete your personal data. You can exercise
             most of these rights directly from Settings, or by emailing
-            <a href="mailto:privacy@kron.app"> privacy@kron.app</a>.
+            <a href="mailto:privacy@krowna.com"> privacy@krowna.com</a>.
           </p>
 
           <h2>8. International Transfers</h2>
@@ -106,12 +106,12 @@ export default function PrivacyPage() {
           <p>
             We use TLS in transit, encryption at rest, row-level security, and least-privilege
             access controls. No system is perfectly secure — if you suspect a vulnerability, please
-            report it to <a href="mailto:security@kron.app">security@kron.app</a>.
+            report it to <a href="mailto:security@krowna.com">security@krowna.com</a>.
           </p>
 
           <h2>10. Children</h2>
           <p>
-            Kron is not directed at children under 13. If we learn we have collected data from a
+            Krowna is not directed at children under 13. If we learn we have collected data from a
             child under 13, we will delete it.
           </p>
 
@@ -123,13 +123,13 @@ export default function PrivacyPage() {
 
           <h2>12. Contact</h2>
           <p>
-            Questions about privacy? Email <a href="mailto:privacy@kron.app">privacy@kron.app</a>.
+            Questions about privacy? Email <a href="mailto:privacy@krowna.com">privacy@krowna.com</a>.
           </p>
         </article>
 
         <div className="mt-12 flex items-center justify-between border-t border-border/30 pt-6 text-xs text-muted-foreground">
           <Link href="/legal/terms" className="hover:text-foreground">&larr; Terms of Service</Link>
-          <Link href="/" className="hover:text-foreground">Back to Kron &rarr;</Link>
+          <Link href="/" className="hover:text-foreground">Back to Krowna &rarr;</Link>
         </div>
       </main>
     </div>

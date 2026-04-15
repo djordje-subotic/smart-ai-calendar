@@ -9,7 +9,7 @@ import { createClient } from "@/src/lib/supabase/client";
 const STEPS = [
   {
     icon: Crown,
-    title: "Welcome to Kron!",
+    title: "Welcome to Krowna!",
     description: "Your AI-powered personal time manager. Let me show you around in 30 seconds.",
   },
   {
@@ -25,7 +25,7 @@ const STEPS = [
   {
     icon: Target,
     title: "Set up your profile",
-    description: "Tell Kron your goals, habits, and constraints. AI will personalize every schedule.",
+    description: "Tell Krowna your goals, habits, and constraints. AI will personalize every schedule.",
   },
   {
     icon: Wand2,
@@ -53,7 +53,7 @@ export function OnboardingTour() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const seen = localStorage.getItem(`kron-onboarding-${user.id}`);
+      const seen = localStorage.getItem(`krowna-onboarding-${user.id}`);
       if (seen) return;
 
       const { data: profile } = await supabase
@@ -76,7 +76,7 @@ export function OnboardingTour() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        localStorage.setItem(`kron-onboarding-${user.id}`, "done");
+        localStorage.setItem(`krowna-onboarding-${user.id}`, "done");
       }
     } catch {}
     setOpen(false);

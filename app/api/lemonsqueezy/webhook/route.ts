@@ -55,7 +55,7 @@ export async function POST(request: Request) {
             user_id: userId,
             type: "credits_purchased",
             title: `${credits} credits added!`,
-            message: `Your Kron account has ${newBalance} bonus credits available.`,
+            message: `Your Krowna account has ${newBalance} bonus credits available.`,
             data: { credits },
           });
         }
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
             user_id: userId,
             type: "plan_activated",
             title: `${plan.toUpperCase()} plan activated!`,
-            message: `Welcome to Kron ${plan.toUpperCase()}. Enjoy premium features.`,
+            message: `Welcome to Krowna ${plan.toUpperCase()}. Enjoy premium features.`,
             data: { plan },
           });
         }

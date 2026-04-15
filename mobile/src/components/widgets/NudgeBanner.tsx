@@ -23,7 +23,7 @@ export function NudgeBanner({ events }: { events: Event[] }) {
 
   // Empty day
   if (events.length === 0 && hour < 20) {
-    nudges.push({ id: "empty", title: "Your day is open", message: "Ready to plan? Ask Kron AI.", icon: "partly-sunny-outline", color: colors.blue });
+    nudges.push({ id: "empty", title: "Your day is open", message: "Ready to plan? Ask Krowna AI.", icon: "partly-sunny-outline", color: colors.blue });
   }
 
   // Check missed

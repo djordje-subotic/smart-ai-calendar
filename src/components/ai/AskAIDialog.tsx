@@ -14,7 +14,8 @@ import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { CreditPurchase } from "./CreditPurchase";
+// import { CreditPurchase } from "./CreditPurchase"; // hidden for MVP — re-enable with packs
+import { migrateLocalStorageKey } from "@/src/lib/storageMigration";
 
 interface DisplayMessage {
   role: "user" | "assistant";
@@ -35,14 +36,14 @@ export function AskAIDialog() {
   const [messages, setMessages] = useState<DisplayMessage[]>(() => {
     if (typeof window === "undefined") return [];
     try {
-      const saved = localStorage.getItem("kron-chat-messages");
+      const saved = migrateLocalStorageKey("krowna-chat-messages", "krowna-chat-messages");
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>(() => {
     if (typeof window === "undefined") return [];
     try {
-      const saved = localStorage.getItem("kron-chat-history");
+      const saved = migrateLocalStorageKey("krowna-chat-history", "krowna-chat-history");
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
@@ -55,7 +56,7 @@ export function AskAIDialog() {
   // Persist chat to localStorage
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem("kron-chat-messages", JSON.stringify(messages.map((m) => ({
+      localStorage.setItem("krowna-chat-messages", JSON.stringify(messages.map((m) => ({
         role: m.role, content: m.content, events: m.events, tasks: m.tasks,
       }))));
     }
@@ -63,7 +64,7 @@ export function AskAIDialog() {
 
   useEffect(() => {
     if (chatHistory.length > 0) {
-      localStorage.setItem("kron-chat-history", JSON.stringify(chatHistory));
+      localStorage.setItem("krowna-chat-history", JSON.stringify(chatHistory));
     }
   }, [chatHistory]);
 
@@ -90,8 +91,8 @@ export function AskAIDialog() {
     setMessages([]);
     setChatHistory([]);
     setShowCreditPurchase(false);
-    localStorage.removeItem("kron-chat-messages");
-    localStorage.removeItem("kron-chat-history");
+    localStorage.removeItem("krowna-chat-messages");
+    localStorage.removeItem("krowna-chat-history");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -129,10 +130,11 @@ export function AskAIDialog() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg === "LIMIT_REACHED" || msg.includes("limit reached") || msg.includes("Upgrade")) {
-        setShowCreditPurchase(true);
+        // Credit packs hidden for MVP — direct users to upgrade their plan.
+        // Re-enable `setShowCreditPurchase(true)` when packs ship.
         setMessages([...newMessages, {
           role: "assistant",
-          content: "You've used all your AI requests this month. Buy extra credits below to keep going, or upgrade your plan in Settings.",
+          content: "You've used all your AI requests this month. Upgrade to Pro or Ultra in Settings to keep going.",
         }]);
       } else {
         setMessages([...newMessages, { role: "assistant", content: `Error: ${msg}` }]);
@@ -256,7 +258,7 @@ export function AskAIDialog() {
             <div className="flex h-6 w-6 items-center justify-center rounded-lg gradient-primary">
               <MessageSquare className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-semibold">Kron AI</span>
+            <span className="text-sm font-semibold">Krowna AI</span>
             {messages.length > 0 && (
               <Badge variant="secondary" className="text-[9px]">{messages.length} msgs</Badge>
             )}
@@ -465,6 +467,7 @@ export function AskAIDialog() {
             </motion.div>
           ))}
 
+          {/* Inline credit purchase — hidden for MVP. When packs return, unwrap this block.
           {showCreditPurchase && (
             <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="px-1">
               <CreditPurchase
@@ -479,6 +482,7 @@ export function AskAIDialog() {
               />
             </motion.div>
           )}
+          */}
 
           {loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
@@ -496,7 +500,7 @@ export function AskAIDialog() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Tell Kron what you need..."
+            placeholder="Tell Krowna what you need..."
             className="flex-1 bg-transparent py-3.5 px-3 text-sm outline-none placeholder:text-muted-foreground/40"
             disabled={loading}
           />

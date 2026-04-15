@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Kron",
-    "slug": "kron-calendar",
+    "name": "Krowna",
+    "slug": "krowna-calendar",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "scheme": "kron",
+    "scheme": "krowna",
     "backgroundColor": "#0f0b15",
     "primaryColor": "#f59e0b",
     "description": "The AI calendar that rules your time. Voice assistant, smart scheduling, focus mode.",
@@ -23,14 +23,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kron.calendar",
+      "bundleIdentifier": "com.krowna.calendar",
       "buildNumber": "1",
       "backgroundColor": "#0f0b15",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Kron needs microphone access for voice commands (Hey Kron).",
-        "NSSpeechRecognitionUsageDescription": "Kron uses speech recognition to transcribe your voice commands.",
-        "NSCalendarsUsageDescription": "Kron can sync with your Apple Calendar to show all your events in one place.",
-        "NSRemindersUsageDescription": "Kron can import your reminders so they appear alongside your events.",
+        "NSMicrophoneUsageDescription": "Krowna needs microphone access for voice commands (Hey Krowna).",
+        "NSSpeechRecognitionUsageDescription": "Krowna uses speech recognition to transcribe your voice commands.",
+        "NSCalendarsUsageDescription": "Krowna can sync with your Apple Calendar to show all your events in one place.",
+        "NSRemindersUsageDescription": "Krowna can import your reminders so they appear alongside your events.",
         "UIBackgroundModes": ["fetch", "processing"],
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -41,7 +41,7 @@
         "backgroundColor": "#0f0b15"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.kron.calendar",
+      "package": "com.krowna.calendar",
       "versionCode": 1,
       "permissions": [
         "RECORD_AUDIO",
@@ -54,7 +54,7 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "name": "Kron",
+      "name": "Krowna",
       "themeColor": "#0f0b15",
       "backgroundColor": "#0f0b15"
     },
@@ -63,13 +63,13 @@
       [
         "expo-calendar",
         {
-          "calendarPermission": "Kron can import events from your Apple/Google calendar so they appear alongside your schedule."
+          "calendarPermission": "Krowna can import events from your Apple/Google calendar so they appear alongside your schedule."
         }
       ],
       [
         "expo-av",
         {
-          "microphonePermission": "Kron needs microphone access for voice commands."
+          "microphonePermission": "Krowna needs microphone access for voice commands."
         }
       ],
       [

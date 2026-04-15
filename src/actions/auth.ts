@@ -38,7 +38,7 @@ export async function register(formData: FormData) {
 
   // Fire-and-forget welcome email. If email provider isn't configured this
   // just logs and returns ok — signup is never blocked on this.
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kron.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://krowna.com";
   sendEmail({ to: email, ...welcomeEmail({ name: fullName, appUrl }) }).catch(() => {});
 
   redirect("/calendar");

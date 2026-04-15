@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useHeyKron } from "@/src/hooks/useHeyKron";
+import { useHeyKrowna } from "@/src/hooks/useHeyKrowna";
 import { playSound } from "@/src/lib/sounds";
+import { migrateLocalStorageKey } from "@/src/lib/storageMigration";
 import { chatWithAI, type ChatMessage } from "@/src/actions/ai";
 import { createEvent } from "@/src/actions/events";
 import { createClient } from "@/src/lib/supabase/client";
@@ -11,7 +12,7 @@ import { Mic, MicOff, Loader2, Volume2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export function HeyKronIndicator() {
+export function HeyKrownaIndicator() {
   const [mounted, setMounted] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -26,10 +27,11 @@ export function HeyKronIndicator() {
         supabase.from("profiles").select("voice_enabled").eq("id", user.id).single().then(({ data }) => {
           const voiceOn = data?.voice_enabled || false;
           setEnabled(voiceOn);
-          localStorage.setItem("kron-hey-mode", String(voiceOn));
+          localStorage.setItem("krowna-hey-mode", String(voiceOn));
         });
       } else {
-        setEnabled(localStorage.getItem("kron-hey-mode") === "true");
+        const stored = migrateLocalStorageKey("krowna-hey-mode", "krowna-hey-mode");
+        setEnabled(stored === "true");
       }
     });
   }, []);
@@ -69,7 +71,7 @@ export function HeyKronIndicator() {
     }
   }, [chatHistory, queryClient]);
 
-  const { phase, transcript, isChrome, endConversation } = useHeyKron({
+  const { phase, transcript, isChrome, endConversation } = useHeyKrowna({
     onCommand: handleCommand,
     enabled,
   });
@@ -77,7 +79,7 @@ export function HeyKronIndicator() {
   function toggleEnabled() {
     const next = !enabled;
     setEnabled(next);
-    localStorage.setItem("kron-hey-mode", String(next));
+    localStorage.setItem("krowna-hey-mode", String(next));
     // Persist to DB
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -147,9 +149,9 @@ export function HeyKronIndicator() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg gradient-primary">
                   <Mic className="h-3 w-3 text-primary-foreground" />
                 </div>
-                <span className="text-xs font-semibold">Kron Voice</span>
+                <span className="text-xs font-semibold">Krowna Voice</span>
               </div>
-              <button onClick={() => { endConversation(); setChatHistory([]); setEnabled(false); localStorage.setItem("kron-hey-mode", "false"); }}
+              <button onClick={() => { endConversation(); setChatHistory([]); setEnabled(false); localStorage.setItem("krowna-hey-mode", "false"); }}
                 className="text-muted-foreground/40 hover:text-muted-foreground">
                 <X className="h-3.5 w-3.5" />
               </button>
