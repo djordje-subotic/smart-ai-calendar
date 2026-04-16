@@ -39,9 +39,12 @@ export async function createEvent(
 ): Promise<CalendarEvent> {
   const { supabase, user } = await getAuthUser();
 
+  // Guard against untitled events — AI sometimes returns null/empty titles
+  const title = (typeof event.title === "string" && event.title.trim()) || "New Event";
+
   const { data, error } = await supabase
     .from("events")
-    .insert({ ...event, user_id: user.id })
+    .insert({ ...event, title, user_id: user.id })
     .select()
     .single();
 

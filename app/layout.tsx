@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/src/components/providers";
 import { CookieBanner } from "@/src/components/CookieBanner";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/src/components/ThemeToggle";
+import { Toaster } from "sonner";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -84,6 +85,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="h-full bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+              color: "hsl(var(--foreground))",
+            },
+          }}
+        />
         <CookieBanner />
       </body>
     </html>

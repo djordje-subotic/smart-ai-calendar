@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUIStore } from "@/src/stores/uiStore";
 import { useCalendarStore } from "@/src/stores/calendarStore";
+import { toast } from "sonner";
 import { useCreateEvent, useUpdateEvent, useDeleteEvent } from "@/src/hooks/useEvents";
 import { CalendarEvent, RecurrenceRule } from "@/src/types/event";
 import { EVENT_COLORS, DEFAULT_EVENT_COLOR } from "@/src/constants/colors";
@@ -112,8 +113,10 @@ export function EventModal({ events }: EventModalProps) {
 
     if (existingEvent) {
       await updateEvent.mutateAsync({ id: existingEvent.id, updates: eventData });
+      toast.success("Event updated");
     } else {
       await createEvent.mutateAsync(eventData);
+      toast.success("Event created");
     }
     closeEventModal();
   }
@@ -121,6 +124,7 @@ export function EventModal({ events }: EventModalProps) {
   async function handleDelete() {
     if (existingEvent) {
       await deleteEventMutation.mutateAsync(existingEvent.id);
+      toast.success("Event deleted");
       closeEventModal();
     }
   }

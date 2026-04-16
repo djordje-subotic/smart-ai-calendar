@@ -1,6 +1,8 @@
 "use client";
 
 import { logout } from "@/src/actions/auth";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getUsageStats } from "@/src/actions/ai";
 import { changePlan, cancelSubscription, type Plan } from "@/src/actions/subscription";
 import { getGoogleAuthUrl, getGoogleSyncStatus, disconnectGoogle } from "@/src/actions/google-calendar";
@@ -47,9 +49,11 @@ const plans: { id: Plan; name: string; price: string; period: string; icon: type
 ];
 
 export default function SettingsPage() {
+  const queryClient = useQueryClient();
   const [usage, setUsage] = useState<{ plan: string; used: number; limit: number } | null>(null);
   const [switching, setSwitching] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
@@ -78,12 +82,16 @@ export default function SettingsPage() {
         if (result.success) {
           const stats = await getUsageStats();
           setUsage(stats);
+          toast.success("Downgraded to Free");
+        } else {
+          toast.error("Downgrade failed");
         }
         setSwitching(null);
         return;
       }
 
       // Upgrade to Pro/Ultra - go through Lemon Squeezy checkout
+      toast.loading("Redirecting to checkout...");
       const res = await fetch("/api/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,12 +102,14 @@ export default function SettingsPage() {
       if (data.mode === "lemonsqueezy" && data.url) {
         window.location.href = data.url;
       } else if (data.mode === "simulated") {
-        // Dev mode - plan changed directly
+        toast.dismiss();
         const stats = await getUsageStats();
         setUsage(stats);
+        toast.success(`Upgraded to ${planId.toUpperCase()}`);
       }
     } catch (err) {
       console.error("Plan upgrade failed:", err);
+      toast.error("Plan upgrade failed. Try again.");
     } finally {
       setSwitching(null);
     }
@@ -111,6 +121,9 @@ export default function SettingsPage() {
     if (result.success) {
       const stats = await getUsageStats();
       setUsage(stats);
+      toast.success("Subscription cancelled. You'll keep access until the end of your billing period.");
+    } else {
+      toast.error(result.error || "Cancel failed. Try again.");
     }
     setCancelling(false);
   }
@@ -483,17 +496,30 @@ export default function SettingsPage() {
         className="pt-4 border-t border-border/30"
       >
         <h3 className="text-sm font-medium mb-3 text-muted-foreground">Account</h3>
-        <form action={logout}>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="submit"
-            className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-          >
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={signingOut}
+          className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+          onClick={async () => {
+            setSigningOut(true);
+            // Clear client-side caches so stale data from this session
+            // doesn't flash for a different user on next login.
+            queryClient.clear();
+            try {
+              localStorage.removeItem("krowna-chat-messages");
+              localStorage.removeItem("krowna-chat-history");
+            } catch {}
+            await logout();
+          }}
+        >
+          {signingOut ? (
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
             <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </Button>
-        </form>
+          )}
+          {signingOut ? "Signing out..." : "Sign out"}
+        </Button>
       </motion.div>
     </div>
   );

@@ -125,6 +125,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Prevent layout shift when modals toggle scrollbar visibility */
+    scrollbar-gutter: stable;
   }
   html {
     @apply font-sans;

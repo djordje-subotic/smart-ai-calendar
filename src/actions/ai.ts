@@ -245,15 +245,19 @@ When user says things like "napravi mi raspored" / "plan my week" / "organize my
 TASKS:
 When user wants to add a task (something without a specific time), include it in "tasks" array.
 
-RESPONSE FORMAT - ONLY JSON, no markdown:
+RESPONSE FORMAT - ONLY valid JSON, no markdown, no code fences:
 {
   "message": "Your conversational response",
-  "events": [{"title":"...","start_time":"...","end_time":"...","location":null,"description":null,"recurrence":null,"color":"#3B82F6","meeting_url":null}],
-  "tasks": [{"title":"...","priority":"medium","color":"#8B5CF6"}],
+  "events": [{"title":"Morning Workout","start_time":"2026-04-17T07:00:00","end_time":"2026-04-17T08:00:00","location":null,"description":null,"recurrence":null,"color":"#10B981","meeting_url":null}],
+  "tasks": [{"title":"Buy groceries","priority":"medium","color":"#8B5CF6"}],
   "actions": [{"type":"delete","event_id":"uuid","event_title":"Event Name","description":"Delete 'Event Name' from today"},{"type":"move","event_id":"uuid","event_title":"Event Name","description":"Move 'Event Name' from 10:00 to 14:00","new_start_time":"...","new_end_time":"..."},{"type":"update","event_id":"uuid","event_title":"Event Name","description":"Change color of 'Event Name' to green","updates":{"color":"#10B981"}}]
 }
 
-If nothing to create/modify, use empty arrays. Always be helpful and proactive.
+CRITICAL RULES:
+- Every event and task MUST have a non-empty "title" field. NEVER use null, "", or "Untitled". If the user doesn't specify a name, infer a descriptive one from context (e.g. user says "add something at 3pm" → title: "Appointment at 3 PM").
+- "start_time" and "end_time" MUST be valid ISO 8601 datetime strings, not null.
+- "message" MUST be a natural language string, not JSON. Never repeat the JSON in message.
+- If nothing to create/modify, use empty arrays. Always be helpful and proactive.
 When proposing actions, your message should ask for confirmation like "Da li si siguran?" or "Should I proceed?".${voiceMode ? `
 
 VOICE MODE (IMPORTANT — the user is using voice, possibly without seeing the screen):
@@ -307,15 +311,36 @@ VOICE MODE (IMPORTANT — the user is using voice, possibly without seeing the s
     setCachedQuery(user.id, lastUserMessage, aiResponse);
   }
 
-  // Parse response
+  // Parse response — extract JSON from the AI text, validate critical fields
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     try {
       const parsed = JSON.parse(jsonMatch[0]);
+
+      // Clean events: ensure every event has a real title + valid times
+      const events = (Array.isArray(parsed.events) ? parsed.events : []).map(
+        (e: Record<string, unknown>) => ({
+          ...e,
+          title:
+            (typeof e.title === "string" && e.title.trim()) ||
+            "New Event",
+        })
+      );
+
+      // Clean tasks: same title guard
+      const tasks = (Array.isArray(parsed.tasks) ? parsed.tasks : []).map(
+        (t: Record<string, unknown>) => ({
+          ...t,
+          title:
+            (typeof t.title === "string" && t.title.trim()) ||
+            "New Task",
+        })
+      );
+
       return {
         message: parsed.message || text,
-        events: Array.isArray(parsed.events) ? parsed.events : [],
-        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+        events,
+        tasks,
         actions: Array.isArray(parsed.actions) ? parsed.actions : [],
         usage: { used: usage.creditsUsed, limit: usage.limit },
       };
