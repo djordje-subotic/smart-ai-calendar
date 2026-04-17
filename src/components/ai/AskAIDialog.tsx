@@ -14,6 +14,7 @@ import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 // import { CreditPurchase } from "./CreditPurchase"; // hidden for MVP — re-enable with packs
 import { migrateLocalStorageKey } from "@/src/lib/storageMigration";
 
@@ -174,8 +175,10 @@ export function AskAIDialog() {
 
       queryClient.invalidateQueries({ queryKey: ["events"] });
       playSound("success");
+      toast.success(`"${event.title}" added to calendar`);
     } catch (err) {
       playSound("error");
+      toast.error("Failed to add event");
       console.error("Failed to add event:", err);
     }
   }
@@ -485,9 +488,23 @@ export function AskAIDialog() {
           */}
 
           {loading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-              <div className="rounded-xl bg-muted/30 px-4 py-2">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-start"
+            >
+              <div className="rounded-xl bg-muted/30 px-4 py-3 flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="h-1.5 w-1.5 rounded-full bg-primary"
+                      animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground ml-1.5">Krowna is thinking...</span>
               </div>
             </motion.div>
           )}

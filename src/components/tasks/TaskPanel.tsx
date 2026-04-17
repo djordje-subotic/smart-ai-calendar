@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Check, Circle, Trash2, ChevronDown, ChevronUp, CalendarDays, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EVENT_COLORS } from "@/src/constants/colors";
@@ -63,6 +64,7 @@ export function TaskPanel() {
     setShowModal(false);
     setSaving(false);
     await loadTasks();
+    toast.success(`"${newTitle.trim()}" added`);
   }
 
   async function handleToggle(task: Task) {
@@ -70,12 +72,14 @@ export function TaskPanel() {
     const newStatus = task.status === "done" ? "todo" : "done";
     await updateTaskStatus(task.id, newStatus);
     await loadTasks();
+    toast.success(newStatus === "done" ? `"${task.title}" completed` : `"${task.title}" reopened`);
   }
 
   async function handleDelete(id: string) {
     playSound("delete");
     await deleteTask(id);
     await loadTasks();
+    toast.success("Task deleted");
   }
 
   return (

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getHabits, createHabit, deleteHabit, toggleCompletion, getCompletions } from "@/src/actions/habits";
+import { toast } from "sonner";
 import { Habit } from "@/src/types/habit";
 import { EVENT_COLORS } from "@/src/constants/colors";
 import { cn } from "@/lib/utils";
@@ -75,8 +76,10 @@ export default function HabitsPage() {
   }
 
   async function handleDelete(habitId: string) {
+    const name = habits.find((h) => h.id === habitId)?.name;
     await deleteHabit(habitId);
     await loadAll();
+    toast.success(name ? `"${name}" deleted` : "Habit deleted");
   }
 
   async function handleCreate(formData: FormData) {
@@ -96,6 +99,7 @@ export default function HabitsPage() {
     });
     setShowCreate(false);
     await loadAll();
+    toast.success(`"${name.trim()}" added`);
   }
 
   // Last 7 days

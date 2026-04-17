@@ -17,7 +17,7 @@ export default function DashboardLayout({
       </div>
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto animate-in fade-in-0 slide-in-from-bottom-1 duration-300">{children}</main>
       </div>
       <AskAIDialog />
       <MobileDrawer />

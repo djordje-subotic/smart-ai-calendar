@@ -131,6 +131,27 @@
   html {
     @apply font-sans;
   }
+
+  /* Smooth scrolling everywhere */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Subtle press feedback on all interactive elements — makes the app
+     feel tactile and responsive without per-component styling. */
+  button:not(:disabled):active,
+  [role="button"]:not(:disabled):active,
+  a:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+
+  /* Smooth focus rings */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
 }
 
 /* Syne custom utilities */

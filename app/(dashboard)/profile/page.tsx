@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserProfile, saveUserProfile, uploadAvatar, type UserProfile } from "@/src/actions/profile";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -432,8 +433,10 @@ export default function ProfilePage() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      toast.success("Profile saved");
     } catch (err) {
       console.error("Failed to save profile:", err);
+      toast.error("Failed to save profile");
     } finally {
       setSaving(false);
     }

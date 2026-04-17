@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getFriends, getPendingRequests, sendFriendRequest, respondToFriendRequest, type FriendProfile } from "@/src/actions/social";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, UserPlus, Check, X, MapPin, Briefcase, Cake, ArrowLeft, Search, Quote, User } from "lucide-react";
@@ -79,9 +80,11 @@ export default function FriendsPage() {
     if (res.success) {
       setSuccess(true);
       setEmail("");
+      toast.success("Friend request sent");
       setTimeout(() => setSuccess(false), 3000);
     } else {
       setError(res.error || "Failed");
+      toast.error(res.error || "Failed to send request");
     }
     setSending(false);
   }
@@ -91,11 +94,13 @@ export default function FriendsPage() {
     setPending((p) => p.filter((x) => x.id !== id));
     const f = await getFriends();
     setFriends(f);
+    toast.success("Friend request accepted");
   }
 
   async function handleDecline(id: string) {
     await respondToFriendRequest(id, false);
     setPending((p) => p.filter((x) => x.id !== id));
+    toast("Request declined");
   }
 
   const filtered = search
