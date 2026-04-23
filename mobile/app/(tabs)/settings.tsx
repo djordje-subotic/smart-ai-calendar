@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert, Linking, Platform } from "react-native";
 import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
@@ -11,6 +12,8 @@ import { colors } from "../../src/constants/colors";
 // import { CreditPurchaseModal } from "../../src/components/CreditPurchaseModal"; // hidden for MVP
 import { useTheme } from "../../src/hooks/useTheme";
 import { listNativeCalendars, syncNativeCalendar, clearSyncedNativeEvents } from "../../src/lib/appleCalendar";
+
+const SOUND_STORAGE_KEY = "krowna-sound-enabled-v1";
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
@@ -43,6 +46,17 @@ export default function SettingsScreen() {
 
   useEffect(() => { loadData(); }, [loadData]);
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+
+  useEffect(() => {
+    SecureStore.getItemAsync(SOUND_STORAGE_KEY)
+      .then((stored) => { if (stored === "false") setSoundEnabled(false); })
+      .catch(() => {});
+  }, []);
+
+  async function toggleSound(value: boolean) {
+    setSoundEnabled(value);
+    try { await SecureStore.setItemAsync(SOUND_STORAGE_KEY, String(value)); } catch {}
+  }
 
   async function toggleVoice(value: boolean) {
     setVoiceEnabled(value);
@@ -193,7 +207,7 @@ export default function SettingsScreen() {
                   <Text style={s.switchDesc}>Play sounds on actions</Text>
                 </View>
               </View>
-              <Switch value={soundEnabled} onValueChange={setSoundEnabled} trackColor={{ false: colors.border, true: colors.primary }} />
+              <Switch value={soundEnabled} onValueChange={toggleSound} trackColor={{ false: colors.border, true: colors.primary }} />
             </View>
             <View style={s.divider} />
             <View style={s.switchRow}>
@@ -270,9 +284,9 @@ export default function SettingsScreen() {
         <View style={s.section}>
           <Text style={s.sectionTitle}>Plans</Text>
           {[
-            { name: "Free", price: "$0", desc: "30 AI/mo, basics", limit: 30 },
-            { name: "Pro", price: "$9/mo", desc: "500 AI/mo, all features", limit: 500, popular: true },
-            { name: "Ultra", price: "$19/mo", desc: "5000 AI/mo, priority support", limit: 5000 },
+            { name: "Free", price: "$0", desc: "50 AI/mo, basics", limit: 50 },
+            { name: "Pro", price: "$9.99/mo", desc: "1,000 AI/mo, all features", limit: 1000, popular: true },
+            { name: "Ultra", price: "$19.99/mo", desc: "5,000 AI/mo, priority support", limit: 5000 },
           ].map((plan) => {
             const isCurrent = usage?.plan === plan.name.toLowerCase();
             return (

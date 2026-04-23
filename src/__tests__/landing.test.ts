@@ -80,7 +80,7 @@ describe("Auth Pages", () => {
   it("register should have free plan includes list", () => {
     const register = readFile("app/(auth)/register/page.tsx");
     expect(register).toContain("Free plan includes");
-    expect(register).toContain("30 AI requests");
+    expect(register).toContain("50 AI requests");
     expect(register).toContain("Voice input");
     expect(register).toContain("Friends");
   });

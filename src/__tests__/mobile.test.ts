@@ -84,7 +84,7 @@ describe("Mobile App - Auth Flow", () => {
 
   it("register should show free plan features", () => {
     const register = readFile(`${MOBILE}/(auth)/register.tsx`);
-    expect(register).toContain("30 AI requests");
+    expect(register).toContain("50 AI requests");
     expect(register).toContain("Free forever");
   });
 

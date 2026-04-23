@@ -79,7 +79,7 @@ export default function RegisterScreen() {
 
             {/* Includes */}
             <View style={s.includes}>
-              {["30 AI requests/mo", "Calendar + Tasks + Habits", "Voice & social scheduling"].map((f) => (
+              {["50 AI requests/mo", "Calendar + Tasks + Habits", "Voice & social scheduling"].map((f) => (
                 <View key={f} style={s.includeRow}>
                   <Text style={s.includeCheck}>✓</Text>
                   <Text style={s.includeText}>{f}</Text>

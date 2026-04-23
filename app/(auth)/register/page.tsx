@@ -18,7 +18,7 @@ const benefits = [
 ];
 
 const freeIncludes = [
-  "30 AI requests per month",
+  "50 AI requests per month",
   "Full calendar with week/day views",
   "Tasks, habits, and streaks",
   "Voice input and Hey Krowna",
