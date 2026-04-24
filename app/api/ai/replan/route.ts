@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     return Response.json(result, { headers: rateLimitHeaders(rl) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message, message: "", moves: [], adds: [], removes: [] }, { status: 200 });
+    const status = message === "LIMIT_REACHED" ? 402 : 500;
+    return Response.json({ error: message, moves: [], adds: [], removes: [] }, { status });
   }
 }

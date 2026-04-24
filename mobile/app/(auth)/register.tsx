@@ -25,9 +25,16 @@ export default function RegisterScreen() {
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setLoading(true);
     setError(null);
-    const err = await signUp(email.trim(), password, fullName.trim());
-    if (err) { setError(err); setLoading(false); }
-    else { router.replace("/(tabs)/calendar"); }
+    try {
+      const err = await signUp(email.trim(), password, fullName.trim());
+      if (err) {
+        setError(err);
+        return;
+      }
+      router.replace("/(tabs)/calendar");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

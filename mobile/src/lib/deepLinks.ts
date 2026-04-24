@@ -8,36 +8,55 @@ import { router } from "expo-router";
  * krowna://calendar → opens calendar
  * krowna://today → opens today view
  */
+function extractId(path: string, prefix: string, hostname: string | null): string | null {
+  // krowna://event/123 → hostname=event, path=123 (or /123)
+  // krowna://event → hostname=event, path=""
+  // krowna:///event/123 → hostname=null, path=event/123
+  if (hostname === prefix.replace("/", "")) {
+    return path.replace(/^\/+/, "") || null;
+  }
+  if (path.startsWith(prefix)) {
+    return path.slice(prefix.length) || null;
+  }
+  return null;
+}
+
 export function handleDeepLink(url: string): boolean {
   try {
     const parsed = Linking.parse(url);
-    const path = parsed.path || parsed.hostname || "";
+    const path = parsed.path || "";
+    const hostname = parsed.hostname || null;
+    const combined = hostname ? `${hostname}/${path.replace(/^\/+/, "")}`.replace(/\/$/, "") : path;
 
-    if (path.startsWith("event/") || parsed.hostname === "event") {
-      router.push("/(tabs)/calendar");
+    const eventId = extractId(path, "event/", hostname);
+    if (eventId || hostname === "event" || path.startsWith("event")) {
+      router.push(eventId ? `/(tabs)/calendar?eventId=${encodeURIComponent(eventId)}` : "/(tabs)/calendar");
       return true;
     }
-    if (path.startsWith("friend/") || parsed.hostname === "friend") {
-      router.push("/(tabs)/friends");
+
+    const friendId = extractId(path, "friend/", hostname);
+    if (friendId || hostname === "friend" || path.startsWith("friend")) {
+      router.push(friendId ? `/(tabs)/friends?friendId=${encodeURIComponent(friendId)}` : "/(tabs)/friends");
       return true;
     }
-    if (path === "today" || parsed.hostname === "today") {
+
+    if (combined === "today" || hostname === "today") {
       router.push("/(tabs)/today");
       return true;
     }
-    if (path === "calendar" || parsed.hostname === "calendar") {
+    if (combined === "calendar" || hostname === "calendar") {
       router.push("/(tabs)/calendar");
       return true;
     }
-    if (path === "ai" || parsed.hostname === "ai") {
+    if (combined === "ai" || hostname === "ai") {
       router.push("/(tabs)/ai");
       return true;
     }
-    if (path === "habits" || parsed.hostname === "habits") {
+    if (combined === "habits" || hostname === "habits") {
       router.push("/(tabs)/habits");
       return true;
     }
-    if (path === "tasks" || parsed.hostname === "tasks") {
+    if (combined === "tasks" || hostname === "tasks") {
       router.push("/(tabs)/tasks");
       return true;
     }

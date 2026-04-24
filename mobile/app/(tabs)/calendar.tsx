@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import { getCached, setCached } from "../../src/lib/offlineCache";
 import { useAuthStore } from "../../src/stores/authStore";
@@ -27,6 +27,7 @@ interface CalendarEvent {
 
 export default function CalendarScreen() {
   const { user } = useAuthStore();
+  const params = useLocalSearchParams<{ eventId?: string }>();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -59,6 +60,16 @@ export default function CalendarScreen() {
   useEffect(() => { loadEvents(); }, [loadEvents]);
   useFocusEffect(useCallback(() => { loadEvents(); }, [loadEvents]));
 
+  // Deep link: open a specific event when navigated with ?eventId=...
+  useEffect(() => {
+    if (!params.eventId) return;
+    const match = events.find((e) => e.id === params.eventId);
+    if (match) {
+      openEdit(match);
+      router.setParams({ eventId: undefined });
+    }
+  }, [params.eventId, events]);
+
   function openEdit(event: CalendarEvent) {
     setEditingEvent({
       id: event.id, title: event.title, description: event.description, location: event.location,
@@ -89,10 +100,13 @@ export default function CalendarScreen() {
     // Optimistic update
     setEvents(events.map((e) => e.id === eventId ? { ...e, start_time: newStart.toISOString(), end_time: newEnd.toISOString() } : e));
     try {
-      await supabase.from("events").update({
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("Not authenticated");
+      const { error } = await supabase.from("events").update({
         start_time: newStart.toISOString(),
         end_time: newEnd.toISOString(),
-      }).eq("id", eventId);
+      }).eq("id", eventId).eq("user_id", currentUser.id);
+      if (error) throw error;
       haptic.success();
     } catch {
       haptic.error();

@@ -43,32 +43,56 @@ export default function FriendsScreen() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: friendships } = await supabase.from("friends")
-      .select("id, user_id, friend_id, status")
-      .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
-      .eq("status", "accepted");
-    if (!friendships) { setLoading(false); return; }
-    const enriched: Friend[] = [];
-    for (const f of friendships) {
-      const friendId = f.user_id === user.id ? f.friend_id : f.user_id;
-      const { data: profile } = await supabase.from("profiles")
-        .select("full_name, display_name, city, occupation, date_of_birth, motto, avatar_preset")
-        .eq("id", friendId).single();
-      enriched.push({
-        id: friendId,
-        name: profile?.full_name || "User",
-        display_name: profile?.display_name || null,
-        city: profile?.city || null,
-        occupation: profile?.occupation || null,
-        date_of_birth: profile?.date_of_birth || null,
-        motto: profile?.motto || null,
-        avatar_preset: profile?.avatar_preset || null,
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: friendships } = await supabase.from("friends")
+        .select("id, user_id, friend_id, status")
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq("status", "accepted");
+      if (!friendships || friendships.length === 0) {
+        setFriends([]);
+        return;
+      }
+
+      // Single batched query instead of N individual lookups
+      const friendIds = friendships.map((f) =>
+        f.user_id === user.id ? f.friend_id : f.user_id
+      );
+      type ProfileRow = {
+        id: string;
+        full_name: string | null;
+        display_name: string | null;
+        city: string | null;
+        occupation: string | null;
+        date_of_birth: string | null;
+        motto: string | null;
+        avatar_preset: string | null;
+      };
+      const { data: profiles } = await supabase.from("profiles")
+        .select("id, full_name, display_name, city, occupation, date_of_birth, motto, avatar_preset")
+        .in("id", friendIds);
+
+      const byId = new Map<string, ProfileRow>(
+        ((profiles || []) as ProfileRow[]).map((p) => [p.id, p])
+      );
+      const enriched: Friend[] = friendIds.map((id) => {
+        const p = byId.get(id);
+        return {
+          id,
+          name: p?.full_name || "User",
+          display_name: p?.display_name || null,
+          city: p?.city || null,
+          occupation: p?.occupation || null,
+          date_of_birth: p?.date_of_birth || null,
+          motto: p?.motto || null,
+          avatar_preset: p?.avatar_preset || null,
+        };
       });
+      setFriends(enriched);
+    } finally {
+      setLoading(false);
     }
-    setFriends(enriched);
-    setLoading(false);
   }
 
   async function handleAdd() {

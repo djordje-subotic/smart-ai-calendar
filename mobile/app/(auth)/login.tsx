@@ -19,9 +19,16 @@ export default function LoginScreen() {
     if (!email.trim() || !password.trim()) { setError("Please fill in all fields"); return; }
     setLoading(true);
     setError(null);
-    const err = await signIn(email.trim(), password);
-    if (err) { setError(err); setLoading(false); }
-    else { router.replace("/(tabs)/calendar"); }
+    try {
+      const err = await signIn(email.trim(), password);
+      if (err) {
+        setError(err);
+        return;
+      }
+      router.replace("/(tabs)/calendar");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

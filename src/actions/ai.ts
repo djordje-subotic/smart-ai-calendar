@@ -122,6 +122,7 @@ export async function chatWithAI(
   const { data: existingEvents } = user ? await supabase
     .from("events")
     .select("id, title, start_time, end_time, description, location, color")
+    .eq("user_id", user.id)
     .gte("start_time", new Date(Date.now() - 7 * 86400000).toISOString())
     .lte("start_time", new Date(Date.now() + 30 * 86400000).toISOString())
     .order("start_time")
@@ -402,6 +403,7 @@ export async function generateDailyBriefing(timezone: string = "Europe/Belgrade"
 
   const { data: events } = await supabase.from("events")
     .select("title, start_time, end_time, location")
+    .eq("user_id", user.id)
     .gte("start_time", startOfDay).lte("start_time", endOfDay).order("start_time");
 
   const now = new Date().toLocaleString("en-US", { timeZone: timezone });
@@ -457,6 +459,7 @@ export async function optimizeSchedule(userRequest: string, startDate: string, e
 
   const { data: events } = await supabase.from("events")
     .select("title, start_time, end_time, location, description")
+    .eq("user_id", user.id)
     .gte("start_time", startDate).lte("start_time", endDate).order("start_time");
 
   const now = new Date().toLocaleString("en-US", { timeZone: timezone });
@@ -508,10 +511,12 @@ export async function replanDay(
 
   const { data: events } = await supabase.from("events")
     .select("title, start_time, end_time, location, status")
+    .eq("user_id", user.id)
     .gte("start_time", startOfDay).lte("start_time", endOfDay).order("start_time");
 
   const { data: tasks } = await supabase.from("tasks")
     .select("title, due_date, due_time, priority, status")
+    .eq("user_id", user.id)
     .eq("due_date", today.toISOString().split("T")[0]).neq("status", "done");
 
   const response = await client.messages.create({

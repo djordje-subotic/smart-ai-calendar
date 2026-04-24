@@ -44,6 +44,9 @@ export function EventModal({ visible, event, onClose, onSaved }: EventModalProps
   const [recurrence, setRecurrence] = useState("none");
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  // Android shows date and time as separate dialogs — chain through "time" after "date".
+  const [androidStartMode, setAndroidStartMode] = useState<"date" | "time">("date");
+  const [androidEndMode, setAndroidEndMode] = useState<"date" | "time">("date");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -153,7 +156,13 @@ export function EventModal({ visible, event, onClose, onSaved }: EventModalProps
 
           {/* Time block */}
           <View style={s.section}>
-            <TouchableOpacity style={s.row} onPress={() => setShowStartPicker(true)}>
+            <TouchableOpacity
+              style={s.row}
+              onPress={() => {
+                setAndroidStartMode("date");
+                setShowStartPicker(true);
+              }}
+            >
               <Ionicons name="calendar-outline" size={18} color={colors.muted} />
               <View style={{ flex: 1 }}>
                 <Text style={s.rowLabel}>Starts</Text>
@@ -161,7 +170,13 @@ export function EventModal({ visible, event, onClose, onSaved }: EventModalProps
               </View>
             </TouchableOpacity>
             <View style={s.divider} />
-            <TouchableOpacity style={s.row} onPress={() => setShowEndPicker(true)}>
+            <TouchableOpacity
+              style={s.row}
+              onPress={() => {
+                setAndroidEndMode("date");
+                setShowEndPicker(true);
+              }}
+            >
               <Ionicons name="time-outline" size={18} color={colors.muted} />
               <View style={{ flex: 1 }}>
                 <Text style={s.rowLabel}>Ends</Text>
@@ -258,13 +273,33 @@ export function EventModal({ visible, event, onClose, onSaved }: EventModalProps
         {showStartPicker && (
           <DateTimePicker
             value={startDate}
-            mode={Platform.OS === "ios" ? "datetime" : "date"}
+            mode={Platform.OS === "ios" ? "datetime" : androidStartMode}
             display={Platform.OS === "ios" ? "inline" : "default"}
-            onChange={(event, date) => {
-              setShowStartPicker(Platform.OS === "ios");
-              if (date) {
-                setStartDate(date);
-                if (date >= endDate) setEndDate(new Date(date.getTime() + 3600000));
+            onChange={(_event, date) => {
+              if (Platform.OS === "ios") {
+                if (date) {
+                  setStartDate(date);
+                  if (date >= endDate) setEndDate(new Date(date.getTime() + 3600000));
+                }
+                return;
+              }
+              // Android: dialog auto-dismisses; chain date → time.
+              if (_event?.type === "dismissed" || !date) {
+                setShowStartPicker(false);
+                return;
+              }
+              if (androidStartMode === "date") {
+                // Preserve existing time on the chosen date
+                const merged = new Date(date);
+                merged.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0);
+                setStartDate(merged);
+                setAndroidStartMode("time");
+              } else {
+                const merged = new Date(startDate);
+                merged.setHours(date.getHours(), date.getMinutes(), 0, 0);
+                setStartDate(merged);
+                if (merged >= endDate) setEndDate(new Date(merged.getTime() + 3600000));
+                setShowStartPicker(false);
               }
             }}
           />
@@ -272,12 +307,29 @@ export function EventModal({ visible, event, onClose, onSaved }: EventModalProps
         {showEndPicker && (
           <DateTimePicker
             value={endDate}
-            mode={Platform.OS === "ios" ? "datetime" : "date"}
+            mode={Platform.OS === "ios" ? "datetime" : androidEndMode}
             display={Platform.OS === "ios" ? "inline" : "default"}
             minimumDate={startDate}
-            onChange={(event, date) => {
-              setShowEndPicker(Platform.OS === "ios");
-              if (date) setEndDate(date);
+            onChange={(_event, date) => {
+              if (Platform.OS === "ios") {
+                if (date) setEndDate(date);
+                return;
+              }
+              if (_event?.type === "dismissed" || !date) {
+                setShowEndPicker(false);
+                return;
+              }
+              if (androidEndMode === "date") {
+                const merged = new Date(date);
+                merged.setHours(endDate.getHours(), endDate.getMinutes(), 0, 0);
+                setEndDate(merged);
+                setAndroidEndMode("time");
+              } else {
+                const merged = new Date(endDate);
+                merged.setHours(date.getHours(), date.getMinutes(), 0, 0);
+                setEndDate(merged);
+                setShowEndPicker(false);
+              }
             }}
           />
         )}

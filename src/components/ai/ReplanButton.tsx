@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { replanDay, type ReplanResult } from "@/src/actions/ai";
-import { createEvent } from "@/src/actions/events";
+import { createEvent, deleteEvent, getEvents, updateEvent } from "@/src/actions/events";
 import { RefreshCw, Loader2, ArrowRight, Plus, Trash2, X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,8 +33,9 @@ export function ReplanButton() {
   async function handleApply() {
     if (!result) return;
     setApplying(true);
+    setError(null);
     try {
-      // Apply adds - create new events
+      // Apply adds — create new events
       for (const add of result.adds) {
         const today = new Date();
         const [h, m] = (add.time || "09:00").split(":").map(Number);
@@ -59,9 +60,47 @@ export function ReplanButton() {
         });
       }
 
+      // For moves/removes we need to look up the actual event IDs by title
+      if (result.removes.length > 0 || result.moves.length > 0) {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+        const todays = await getEvents(startOfDay, endOfDay);
+        const handled = new Set<string>();
+
+        // Apply moves — reschedule matched event to the new time, preserving duration
+        for (const mv of result.moves) {
+          const match = todays.find(
+            (e) => e.title.toLowerCase() === mv.event_title.toLowerCase() && !handled.has(e.id)
+          );
+          if (!match) continue;
+          const [nh, nm] = (mv.to || "09:00").split(":").map(Number);
+          const newStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), nh, nm || 0);
+          const duration =
+            new Date(match.end_time).getTime() - new Date(match.start_time).getTime();
+          const newEnd = new Date(newStart.getTime() + (duration > 0 ? duration : 30 * 60000));
+          await updateEvent(match.id, {
+            start_time: newStart.toISOString(),
+            end_time: newEnd.toISOString(),
+          });
+          handled.add(match.id);
+        }
+
+        // Apply removes — match AI-suggested removals by title
+        for (const r of result.removes) {
+          const match = todays.find(
+            (e) => e.title.toLowerCase() === r.event_title.toLowerCase() && !handled.has(e.id)
+          );
+          if (match) {
+            await deleteEvent(match.id);
+            handled.add(match.id);
+          }
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setApplied(true);
-    } catch (err) {
+    } catch {
       setError("Failed to apply some changes");
     } finally {
       setApplying(false);
@@ -108,7 +147,7 @@ export function ReplanButton() {
               ))}
 
               {/* Apply button */}
-              {(result.adds.length > 0 || result.moves.length > 0) && !applied && (
+              {(result.adds.length > 0 || result.moves.length > 0 || result.removes.length > 0) && !applied && (
                 <Button
                   size="sm"
                   onClick={handleApply}
