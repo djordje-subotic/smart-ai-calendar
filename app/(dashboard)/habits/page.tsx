@@ -65,12 +65,9 @@ export default function HabitsPage() {
       return { ...h, streak_current: newStreak, streak_best: Math.max(h.streak_best, newStreak) };
     }));
 
-    // Server update in background
-    toggleCompletion(habitId, today).then((result) => {
-      console.log("Toggle result:", result, "for habit:", habitId, "date:", today);
-    }).catch((err) => {
+    // Server update in background — revert optimistic state on failure.
+    toggleCompletion(habitId, today).catch((err) => {
       console.error("Toggle failed:", err);
-      // Revert on error
       loadAll();
     });
   }

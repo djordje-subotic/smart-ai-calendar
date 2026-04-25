@@ -10,24 +10,9 @@ export async function sendFriendRequest(friendEmail: string): Promise<{ success:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  // Find friend by email
-  const { data: friendUser } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", (await supabase.rpc("get_user_id_by_email", { email_input: friendEmail })).data)
-    .single();
-
-  // Fallback: search auth.users via admin (RLS won't let us query auth.users)
-  // Instead, search profiles joined with auth metadata
-  const { data: allProfiles } = await supabase
-    .from("profiles")
-    .select("id, full_name");
-
-  // We need a different approach - let user search by email through a function
-  // For now, use Supabase auth admin to find user
-  // Simple approach: store email in profiles or use lookup
-
-  // Direct insert with email lookup via Supabase
+  // Resolve the email to a user id via the SECURITY DEFINER RPC (migration 018).
+  // RLS on profiles can't reach auth.users, so the lookup has to live in a SQL
+  // function. Returns NULL when no account exists for that email.
   const { data: targetUser, error: lookupError } = await supabase
     .rpc("find_user_by_email", { target_email: friendEmail });
 
@@ -35,7 +20,7 @@ export async function sendFriendRequest(friendEmail: string): Promise<{ success:
     return { success: false, error: "User not found. They need to sign up for Krowna first." };
   }
 
-  const friendId = targetUser;
+  const friendId = targetUser as string;
 
   if (friendId === user.id) return { success: false, error: "You can't add yourself" };
 

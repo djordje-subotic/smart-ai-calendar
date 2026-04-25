@@ -122,16 +122,34 @@ export async function POST(
     });
 
     if (bookingError) {
+      // EXCLUDE constraint (migration 018) rejects overlap atomically — the
+      // SELECT-then-INSERT check above can lose the race under concurrent
+      // requests. Roll the placeholder event back so the host's calendar
+      // stays clean, and surface a user-facing 409 instead of a 500.
+      if (bookingError.code === "23P01") {
+        if (event?.id) {
+          await supabase.from("events").delete().eq("id", event.id);
+        }
+        return Response.json(
+          { error: "That slot was just taken. Please pick another time." },
+          { status: 409 }
+        );
+      }
       console.error("booking insert failed", bookingError);
+      if (event?.id) {
+        await supabase.from("events").delete().eq("id", event.id);
+      }
       return Response.json({ error: "Could not save booking" }, { status: 500 });
     }
 
-    // Notify the host (in-app)
+    // Notify the host (in-app). The notifications table column is `message`,
+    // not `body` — using `body` here meant the insert silently failed and the
+    // host never saw new bookings in the bell.
     await supabase.from("notifications").insert({
       user_id: link.user_id,
       type: "booking_received",
       title: "New booking",
-      body: `${name} booked ${startDate.toLocaleString()}`,
+      message: `${name} booked ${startDate.toLocaleString()}`,
       data: { event_id: event?.id, guest_email: email },
     }).then(() => {}, () => {}); // table may not exist in dev; silent fail
 
