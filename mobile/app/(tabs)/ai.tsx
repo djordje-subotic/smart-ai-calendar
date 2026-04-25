@@ -7,6 +7,7 @@ import { speak } from "../../src/lib/voice";
 import { haptic } from "../../src/lib/haptics";
 import { KrownaCrown } from "../../src/components/KrownaLogo";
 import { HeyKrownaButton } from "../../src/components/HeyKrownaButton";
+import { HeyKrownaPanel } from "../../src/components/HeyKrownaPanel";
 import { format } from "date-fns";
 
 interface ChatEvent { title: string; start_time: string; end_time: string; color: string; meeting_url?: string | null; recurrence?: any; }
@@ -80,7 +81,37 @@ export default function AIScreen() {
             <Text style={s.headerSubtitle}>Your personal time manager</Text>
           </View>
         </View>
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+          <HeyKrownaPanel
+            onCommand={async (command) => {
+              // Inject wake-word command into the regular chat flow.
+              setInput(command);
+              // Direct call — reuse the same handler as text input would
+              const fakeEvent = { preventDefault: () => {} } as { preventDefault: () => void };
+              try {
+                setLoading(true);
+                const newHistory = [...chatHistory, { role: "user", content: command }];
+                setMessages((prev) => [...prev, { role: "user", content: command }]);
+                const res = await fetch(`${API_URL}/api/ai/chat`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ messages: newHistory, timezone: "Europe/Belgrade", voiceMode: true }),
+                });
+                const result = await res.json();
+                if (result.error) throw new Error(result.error);
+                setMessages((prev) => [...prev, { role: "assistant", content: result.message, events: result.events || [], actions: result.actions || [] }]);
+                setChatHistory([...newHistory, { role: "assistant", content: result.message }]);
+                return result.message as string;
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Sorry, something went wrong.";
+                return msg;
+              } finally {
+                setLoading(false);
+                setInput("");
+                void fakeEvent;
+              }
+            }}
+          />
           <TouchableOpacity
             style={[s.headerBtn, voiceMode && s.headerBtnActive]}
             onPress={() => setVoiceMode(!voiceMode)}

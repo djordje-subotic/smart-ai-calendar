@@ -11,15 +11,26 @@ interface Props {
   compact?: boolean;
 }
 
+// Auto-stop after 30s to prevent runaway recording on dead mics / pocket dial
+const MAX_RECORD_MS = 30_000;
+
 /**
- * Press-and-hold mic button for voice input.
- * Records audio while held, transcribes when released.
- * On platforms without STT available, serves as visual cue / launches dictation.
+ * Tap-to-toggle voice recorder.
+ *
+ * Press-and-hold was unreliable on mobile — quick taps would start/stop
+ * before expo-av finished setting up the recorder, leading to silent
+ * failures. Tap-to-toggle has clear state transitions: first tap starts,
+ * second tap (or 30s timeout) stops and transcribes.
+ *
+ * True "Hey Krowna" wake-word on mobile requires native SDKs (Porcupine /
+ * PicoVoice) which is out of scope for MVP. The tap-to-toggle flow gives
+ * the same UX feel: single tap and the mic is immediately listening.
  */
 export function HeyKrownaButton({ onTranscript, compact }: Props) {
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -36,12 +47,24 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
     }
   }, [isRecording]);
 
+  // Cleanup on unmount — don't leave a recorder running in the background
+  useEffect(() => {
+    return () => {
+      if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
+      if (recordingRef.current) {
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
+      }
+    };
+  }, []);
+
   async function startRecording() {
     try {
       haptic.medium();
+
       const perm = await Audio.requestPermissionsAsync();
       if (!perm.granted) {
         Alert.alert("Permission needed", "Grant microphone access to use voice input.");
+        haptic.warning();
         return;
       }
 
@@ -50,68 +73,97 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
         playsInSilentModeIOS: true,
       });
 
-      const { recording: rec } = await Audio.Recording.createAsync(
+      const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
-      setRecording(rec);
+      recordingRef.current = recording;
       setIsRecording(true);
+
+      // Safety timeout — if the user walks away with the mic on, stop automatically
+      autoStopTimerRef.current = setTimeout(() => {
+        if (recordingRef.current) stopRecording();
+      }, MAX_RECORD_MS);
     } catch (err) {
-      console.error("Failed to start recording", err);
+      console.warn("Failed to start recording", err);
       setIsRecording(false);
+      haptic.error();
+      Alert.alert("Couldn't start recording", "Try again in a moment.");
     }
   }
 
   async function stopRecording() {
+    const recording = recordingRef.current;
     if (!recording) return;
+
     haptic.light();
     setIsRecording(false);
     setProcessing(true);
+    recordingRef.current = null;
+
+    if (autoStopTimerRef.current) {
+      clearTimeout(autoStopTimerRef.current);
+      autoStopTimerRef.current = null;
+    }
 
     try {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
-      setRecording(null);
 
-      if (uri) {
-        const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
-        const formData = new FormData();
-        formData.append("audio", {
-          uri,
-          type: "audio/m4a",
-          name: "recording.m4a",
-        } as any);
+      if (!uri) {
+        setProcessing(false);
+        return;
+      }
 
-        // Mobile doesn't have web cookies — pass the Supabase access token
-        // as a Bearer header so the API route can authenticate the request.
-        const { data: { session } } = await supabase.auth.getSession();
-        const headers: Record<string, string> = {};
-        if (session?.access_token) {
-          headers["Authorization"] = `Bearer ${session.access_token}`;
-        }
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+      const formData = new FormData();
+      formData.append("audio", {
+        uri,
+        type: "audio/m4a",
+        name: "recording.m4a",
+      } as unknown as Blob);
 
-        const res = await fetch(`${API_URL}/api/ai/transcribe`, {
-          method: "POST",
-          headers,
-          body: formData,
-        });
-        const data = await res.json();
+      // Mobile has no cookies — attach Supabase access token so the API
+      // route can authenticate (see /api/ai/transcribe getUser helper).
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
 
-        if (data.error === "NO_API_KEY") {
-          Alert.alert("Voice not configured", "Add OPENAI_API_KEY to .env.local to enable voice transcription.");
-          haptic.warning();
-        } else if (data.text && onTranscript) {
-          onTranscript(data.text);
-          haptic.success();
-        } else if (data.error) {
-          Alert.alert("Transcription failed", data.error);
-          haptic.error();
-        }
+      const res = await fetch(`${API_URL}/api/ai/transcribe`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (data.error === "NO_API_KEY") {
+        Alert.alert("Voice not configured", "Add OPENAI_API_KEY to enable transcription.");
+        haptic.warning();
+      } else if (data.text && onTranscript) {
+        onTranscript(data.text);
+        haptic.success();
+      } else if (data.error) {
+        Alert.alert("Transcription failed", data.error);
+        haptic.error();
+      } else {
+        haptic.warning();
+        Alert.alert("Nothing heard", "Try again and speak clearly.");
       }
     } catch (err) {
-      console.error("Failed to stop recording", err);
+      console.warn("Failed to stop recording", err);
       haptic.error();
     } finally {
       setProcessing(false);
+    }
+  }
+
+  function handleTap() {
+    if (processing) return;
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   }
 
@@ -119,12 +171,7 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
 
   return (
     <View style={s.container}>
-      <TouchableOpacity
-        onPressIn={startRecording}
-        onPressOut={stopRecording}
-        activeOpacity={0.8}
-        disabled={processing}
-      >
+      <TouchableOpacity onPress={handleTap} activeOpacity={0.8} disabled={processing}>
         <Animated.View
           style={[
             s.button,
@@ -135,7 +182,7 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
           ]}
         >
           <Ionicons
-            name={isRecording ? "mic" : processing ? "ellipse" : "mic-outline"}
+            name={isRecording ? "mic" : processing ? "hourglass-outline" : "mic-outline"}
             size={compact ? 18 : 26}
             color={isRecording ? "#fff" : colors.primaryForeground}
           />
@@ -143,7 +190,11 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
       </TouchableOpacity>
       {!compact && (
         <Text style={s.hint}>
-          {isRecording ? "Recording... release to send" : processing ? "Processing..." : "Hold to speak"}
+          {isRecording
+            ? "Listening… tap to send"
+            : processing
+            ? "Transcribing…"
+            : "Tap to speak"}
         </Text>
       )}
     </View>

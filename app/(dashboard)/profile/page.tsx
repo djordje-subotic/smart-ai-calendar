@@ -28,7 +28,7 @@ const AVATAR_STYLES = [
   { id: "big-smile", label: "Smile" },
 ];
 
-// Each style gets 6 seed variations
+// Each style gets 12 seed variations
 const AVATAR_SEEDS = ["felix", "aneka", "nova", "zephyr", "luna", "orion", "kai", "aria", "sage", "blaze", "ember", "storm"];
 
 function getDiceBearUrl(style: string, seed: string) {

@@ -79,6 +79,14 @@
           "color": "#f59e0b",
           "defaultChannel": "default"
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Krowna listens for 'Hey Krowna' to take voice commands.",
+          "speechRecognitionPermission": "Krowna uses speech recognition to understand your voice commands.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
       ]
     ],
     "runtimeVersion": {

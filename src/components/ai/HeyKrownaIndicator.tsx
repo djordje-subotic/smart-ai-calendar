@@ -71,7 +71,7 @@ export function HeyKrownaIndicator() {
     }
   }, [chatHistory, queryClient]);
 
-  const { phase, transcript, isChrome, endConversation } = useHeyKrowna({
+  const { phase, transcript, isSupported, endConversation, lastError } = useHeyKrowna({
     onCommand: handleCommand,
     enabled,
   });
@@ -92,23 +92,43 @@ export function HeyKrownaIndicator() {
     }
   }
 
-  if (!mounted || !isChrome) return null;
+  if (!mounted) return null;
+
+  // Unsupported browsers: show a muted, disabled toggle with hint
+  if (!isSupported) {
+    return (
+      <button
+        disabled
+        title="Voice requires Chrome, Edge, or Safari"
+        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium border border-border/30 bg-muted/20 text-muted-foreground/50 cursor-not-allowed"
+      >
+        <MicOff className="h-3 w-3" />
+        Voice unsupported
+      </button>
+    );
+  }
+
+  const statusLabel =
+    phase === "processing" ? "Thinking…" :
+    phase === "speaking" ? "Speaking…" :
+    phase === "command" ? "Listening…" :
+    phase === "wake" && transcript ? "Hearing…" :
+    enabled ? "Voice on" : "Voice off";
 
   return (
     <>
       {/* Toggle button */}
       <button
         onClick={toggleEnabled}
+        title={enabled ? "Say 'Hey Krowna' to talk. Click to turn off." : "Turn voice on — then say 'Hey Krowna'"}
         className={cn(
           "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium transition-all border",
-          phase === "listening" || phase === "ready"
-            ? transcript
-              ? "bg-red-500/15 text-red-400 border-red-500/30"
-              : "bg-green-500/15 text-green-400 border-green-500/30"
-            : phase === "speaking"
+          phase === "command"
+            ? "bg-red-500/15 text-red-400 border-red-500/40 ring-2 ring-red-500/30"
+            : phase === "speaking" || phase === "processing"
               ? "bg-primary/15 text-primary border-primary/30"
-              : phase === "processing"
-                ? "bg-primary/15 text-primary border-primary/30"
+              : phase === "wake" && transcript
+                ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
                 : enabled
                   ? "bg-primary/10 text-primary border-primary/20"
                   : "bg-muted/30 text-muted-foreground border-border/30 hover:border-border/50"
@@ -118,7 +138,7 @@ export function HeyKrownaIndicator() {
           <Loader2 className="h-3 w-3 animate-spin" />
         ) : phase === "speaking" ? (
           <Volume2 className="h-3 w-3" />
-        ) : (phase === "ready" || phase === "listening") && transcript ? (
+        ) : phase === "command" ? (
           <div className="flex items-center gap-[2px] h-3">
             <div className="w-[2px] rounded-full bg-red-400 sound-bar-1" />
             <div className="w-[2px] rounded-full bg-red-400 sound-bar-2" />
@@ -129,15 +149,19 @@ export function HeyKrownaIndicator() {
         ) : (
           <MicOff className="h-3 w-3" />
         )}
-        {phase === "processing" ? "Thinking..." :
-         phase === "speaking" ? "Speaking..." :
-         transcript ? "Hearing..." :
-         enabled ? "Voice on" : "Voice off"}
+        {statusLabel}
       </button>
 
-      {/* Floating panel - shows when something is happening */}
+      {/* Permission-denied toast (inline, since user needs to act) */}
+      {lastError && enabled && (
+        <div className="fixed top-16 right-6 z-50 w-72 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          {lastError}
+        </div>
+      )}
+
+      {/* Floating panel - shows during active interaction */}
       <AnimatePresence>
-        {enabled && (phase === "processing" || phase === "speaking" || transcript) && (
+        {enabled && (phase === "processing" || phase === "speaking" || phase === "command" || transcript) && (
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -206,7 +230,7 @@ export function HeyKrownaIndicator() {
             </div>
 
             <div className="px-4 py-2 border-t border-border/20 text-[9px] text-muted-foreground/40 text-center">
-              Always listening · Try &ldquo;What&apos;s next?&rdquo; or &ldquo;Read my day&rdquo;
+              Say &ldquo;Hey Krowna&rdquo; to start · Then &ldquo;What&apos;s next?&rdquo; or &ldquo;Plan my day&rdquo;
             </div>
           </motion.div>
         )}
