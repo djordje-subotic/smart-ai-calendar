@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, PanResponder, Animated } from "react-native";
 import { colors } from "../../constants/colors";
 import { format, isSameDay } from "date-fns";
@@ -103,33 +103,42 @@ function DraggableEvent({
   event: DayEvent; top: number; height: number;
   onPress: () => void; onLongPress: () => void; onDragEnd: (newTop: number) => void; isDragging: boolean;
 }) {
-  const pan = useRef(new Animated.Value(0)).current;
+  const pan = useMemo(() => new Animated.Value(0), []);
   const [active, setActive] = useState(false);
+  const activeRef = useRef(active);
   const latestTop = useRef(top);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: () => active,
-      onPanResponderGrant: () => {
-        pan.setValue(0);
-      },
-      onPanResponderMove: (_, gesture) => {
-        pan.setValue(gesture.dy);
-        latestTop.current = top + gesture.dy;
-      },
-      onPanResponderRelease: () => {
-        onDragEnd(latestTop.current);
-        setActive(false);
-        pan.setValue(0);
-        haptic.success();
-      },
-      onPanResponderTerminate: () => {
-        setActive(false);
-        pan.setValue(0);
-      },
-    })
-  ).current;
+  useEffect(() => { activeRef.current = active; }, [active]);
+  useEffect(() => { latestTop.current = top; }, [top]);
+
+  // Closures inside PanResponder.create only run during gesture events,
+  // never during render — refs are safe here.
+  // eslint-disable-next-line react-hooks/refs
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: () => activeRef.current,
+        onPanResponderGrant: () => {
+          pan.setValue(0);
+        },
+        onPanResponderMove: (_, gesture) => {
+          pan.setValue(gesture.dy);
+          latestTop.current = top + gesture.dy;
+        },
+        onPanResponderRelease: () => {
+          onDragEnd(latestTop.current);
+          setActive(false);
+          pan.setValue(0);
+          haptic.success();
+        },
+        onPanResponderTerminate: () => {
+          setActive(false);
+          pan.setValue(0);
+        },
+      }),
+    [pan, top, onDragEnd]
+  );
 
   return (
     <Animated.View

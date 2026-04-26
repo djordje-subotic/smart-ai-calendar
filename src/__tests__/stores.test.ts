@@ -1,11 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
+type UIStore = typeof import("@/src/stores/uiStore")["useUIStore"];
+type CalendarStore = typeof import("@/src/stores/calendarStore")["useCalendarStore"];
+
 describe("UI Store", () => {
-  let useUIStore: any;
+  let useUIStore: UIStore;
 
   beforeEach(async () => {
-    const module = await import("@/src/stores/uiStore");
-    useUIStore = module.useUIStore;
+    const mod = await import("@/src/stores/uiStore");
+    useUIStore = mod.useUIStore;
     // Reset state
     useUIStore.setState({
       isEventModalOpen: false,
@@ -80,11 +83,11 @@ describe("UI Store", () => {
 });
 
 describe("Calendar Store", () => {
-  let useCalendarStore: any;
+  let useCalendarStore: CalendarStore;
 
   beforeEach(async () => {
-    const module = await import("@/src/stores/calendarStore");
-    useCalendarStore = module.useCalendarStore;
+    const mod = await import("@/src/stores/calendarStore");
+    useCalendarStore = mod.useCalendarStore;
   });
 
   it("should default to month view", () => {

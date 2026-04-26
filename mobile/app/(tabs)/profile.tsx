@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,9 +43,7 @@ export default function ProfileScreen() {
   const [constraints, setConstraints] = useState<string[]>([]);
   const [idealDay, setIdealDay] = useState("");
 
-  useEffect(() => { load(); }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
@@ -66,7 +64,9 @@ export default function ProfileScreen() {
       setIdealDay(data.ideal_day || "");
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   function toggle(list: string[], setList: (v: string[]) => void, item: string) {
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
         {/* AI Personalization */}
         <SectionTitle>AI Personalization</SectionTitle>
 
-        <Label>Krowna's personality</Label>
+        <Label>{"Krowna's personality"}</Label>
         <View style={s.motivationGrid}>
           {MOTIVATION_STYLES.map((style) => (
             <TouchableOpacity

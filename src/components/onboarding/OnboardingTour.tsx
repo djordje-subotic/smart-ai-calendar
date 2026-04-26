@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Calendar, Target, Users, Wand2, Crown } from "lucide-react";
@@ -43,11 +43,7 @@ export function OnboardingTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
-  useEffect(() => {
-    checkFirstTime();
-  }, []);
-
-  async function checkFirstTime() {
+  const checkFirstTime = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -62,14 +58,17 @@ export function OnboardingTour() {
         .eq("id", user.id)
         .single();
 
-      // Show onboarding to new users (created < 10 min ago) who haven't completed it
       if (profile && !profile.onboarding_completed) {
         const created = new Date(profile.created_at).getTime();
         const isNew = Date.now() - created < 10 * 60 * 1000;
         if (isNew) setOpen(true);
       }
     } catch {}
-  }
+  }, []);
+
+  useEffect(() => {
+    checkFirstTime();
+  }, [checkFirstTime]);
 
   async function handleFinish() {
     try {
