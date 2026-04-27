@@ -1,17 +1,16 @@
 import { chatWithAI, type ChatMessage } from "@/src/actions/ai";
-import { createClient } from "@/src/lib/supabase/server";
+import { getApiAuth } from "@/src/lib/supabase/api-auth";
 import { getClientIp, rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/src/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const auth = await getApiAuth(request);
+    if (!auth) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const rl = rateLimit({
-      key: user.id || getClientIp(request),
+      key: auth.user.id || getClientIp(request),
       scope: "ai-chat",
       ...RATE_LIMITS.ai,
     });
@@ -23,7 +22,12 @@ export async function POST(request: Request) {
     }
 
     const { messages, timezone, voiceMode } = await request.json();
-    const result = await chatWithAI(messages as ChatMessage[], timezone || "Europe/Belgrade", voiceMode || false);
+    const result = await chatWithAI(
+      messages as ChatMessage[],
+      timezone || "Europe/Belgrade",
+      voiceMode || false,
+      auth,
+    );
     return Response.json(result, { headers: rateLimitHeaders(rl) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -147,7 +147,47 @@ describe("Database Migrations", () => {
       "011_meeting_url",
       "012_on_demand_credits",
       "013_voice_preference",
+      "014_push_token",
+      "015_share_links",
+      "016_calendar_subscriptions",
+      "017_ls_subscription_id",
+      "018_user_email_lookup",
     ];
-    expect(migrations).toHaveLength(13);
+    expect(migrations).toHaveLength(18);
+  });
+
+  it("018 should add the find_user_by_email RPC and email column", async () => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const sql = fs.readFileSync(
+      path.join(process.cwd(), "supabase/migrations/018_user_email_lookup.sql"),
+      "utf-8",
+    );
+    expect(sql).toMatch(/ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email/);
+    expect(sql).toMatch(/CREATE OR REPLACE FUNCTION public\.find_user_by_email/);
+    expect(sql).toMatch(/SECURITY DEFINER/);
+  });
+});
+
+describe("Mobile + Web shared API auth", () => {
+  it("should expose getApiUser and getApiAuth for routes", async () => {
+    const module = await import("@/src/lib/supabase/api-auth");
+    expect(module.getApiUser).toBeDefined();
+    expect(module.getApiAuth).toBeDefined();
+  });
+});
+
+describe("Booking flow notification field", () => {
+  it("should insert notification with `message` not `body`", async () => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const route = fs.readFileSync(
+      path.join(process.cwd(), "app/api/share/[slug]/book/route.ts"),
+      "utf-8",
+    );
+    expect(route).toMatch(/type:\s*"booking_received"/);
+    expect(route).toMatch(/message:\s*`/);
+    // The schema column is `message` — `body` would be silently rejected.
+    expect(route).not.toMatch(/\bbody:\s*`\$\{name\} booked/);
   });
 });

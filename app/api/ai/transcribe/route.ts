@@ -1,39 +1,11 @@
-import { createClient } from "@/src/lib/supabase/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { getApiUser } from "@/src/lib/supabase/api-auth";
 import { getClientIp, rateLimit, rateLimitHeaders } from "@/src/lib/rate-limit";
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // Whisper API limit
 
-/**
- * Authenticate from cookies (web) or from Authorization Bearer token (mobile).
- * Mobile apps don't have access to Next.js cookies, so they pass the Supabase
- * access token in the Authorization header instead.
- */
-async function getUser(request: Request) {
-  // Try cookie-based auth first (web)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) return user;
-
-  // Fallback: Bearer token auth (mobile)
-  const authHeader = request.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    const client = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-    const { data: { user: mobileUser } } = await client.auth.getUser(token);
-    return mobileUser;
-  }
-
-  return null;
-}
-
 export async function POST(request: Request) {
   try {
-    const user = await getUser(request);
+    const user = await getApiUser(request);
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const rl = rateLimit({

@@ -4,11 +4,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
+import { apiFetch } from "../../src/lib/api";
 import { colors } from "../../src/constants/colors";
 import { EnergyIndicator } from "../../src/components/widgets/EnergyIndicator";
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 const FOCUS_DURATIONS = [
   { min: 25, label: "25m", desc: "Pomodoro" },
@@ -84,7 +83,7 @@ export default function ToolsScreen() {
   async function generateReport() {
     setLoadingReport(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/weekly-report`, { method: "POST" });
+      const res = await apiFetch(`/api/ai/weekly-report`, { method: "POST" });
       const data = await res.json();
       setReport(data);
     } catch {
@@ -108,8 +107,8 @@ export default function ToolsScreen() {
         vacation_mode: "Plan a relaxing vacation week with no work.",
       };
 
-      const res = await fetch(`${API_URL}/api/ai/chat`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const res = await apiFetch(`/api/ai/chat`, {
+        method: "POST",
         body: JSON.stringify({
           messages: [{ role: "user", content: `${templates[id]} Start: ${startDate.toISOString().split("T")[0]}. Generate events.` }],
           timezone: "Europe/Belgrade",

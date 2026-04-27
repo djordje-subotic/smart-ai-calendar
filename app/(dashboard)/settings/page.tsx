@@ -255,12 +255,18 @@ export default function SettingsPage() {
               <div key={r.id} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
                 <span className="text-xs font-medium flex-1">{r.fromName} wants to connect</span>
                 <Button size="sm" className="h-7 text-[10px] gradient-primary border-0 text-primary-foreground" onClick={async () => {
-                  try { await respondToFriendRequest(r.id, true); setPendingReqs((p) => p.filter((x) => x.id !== r.id)); const f = await getFriends(); setFriends(Array.isArray(f) ? f : []); } catch {}
+                  const res = await respondToFriendRequest(r.id, true);
+                  if (!res.success) return;
+                  setPendingReqs((p) => p.filter((x) => x.id !== r.id));
+                  const f = await getFriends();
+                  setFriends(Array.isArray(f) ? f : []);
                 }}>
                   <Check className="mr-1 h-3 w-3" />Accept
                 </Button>
                 <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={async () => {
-                  try { await respondToFriendRequest(r.id, false); setPendingReqs((p) => p.filter((x) => x.id !== r.id)); } catch {}
+                  const res = await respondToFriendRequest(r.id, false);
+                  if (!res.success) return;
+                  setPendingReqs((p) => p.filter((x) => x.id !== r.id));
                 }}>
                   <X className="h-3 w-3" />
                 </Button>

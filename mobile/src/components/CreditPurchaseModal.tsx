@@ -4,9 +4,8 @@ import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { supabase } from "../lib/supabase";
+import { apiFetch } from "../lib/api";
 import { haptic } from "../lib/haptics";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 const PACKAGES = [
   { id: "pack_150", credits: 150, priceCents: 299, price: "$2.99", perCredit: "$0.02" },
@@ -31,9 +30,8 @@ export function CreditPurchaseModal({ visible, onClose, onPurchased }: Props) {
       if (!user) { Alert.alert("Error", "Not signed in"); return; }
 
       // Try Stripe checkout first
-      const checkoutRes = await fetch(`${API_URL}/api/credits/checkout`, {
+      const checkoutRes = await apiFetch(`/api/credits/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ packageId: pack.id }),
       });
       const checkoutData = await checkoutRes.json();

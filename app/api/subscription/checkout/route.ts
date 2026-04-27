@@ -1,5 +1,5 @@
 import { createLemonSqueezyCheckout, LS_VARIANT_IDS, isLemonSqueezyConfigured } from "@/src/lib/lemonsqueezy";
-import { createClient } from "@/src/lib/supabase/server";
+import { getApiAuth } from "@/src/lib/supabase/api-auth";
 import { getClientIp, rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/src/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -9,9 +9,9 @@ export async function POST(request: Request) {
       return Response.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return Response.json({ error: "Not authenticated" }, { status: 401 });
+    const auth = await getApiAuth(request);
+    if (!auth) return Response.json({ error: "Not authenticated" }, { status: 401 });
+    const { user, supabase } = auth;
 
     const rl = rateLimit({
       key: user.id || getClientIp(request),

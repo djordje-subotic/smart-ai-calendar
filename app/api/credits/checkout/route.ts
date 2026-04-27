@@ -1,5 +1,5 @@
 import { createLemonSqueezyCheckout, LS_VARIANT_IDS, isLemonSqueezyConfigured } from "@/src/lib/lemonsqueezy";
-import { createClient } from "@/src/lib/supabase/server";
+import { getApiAuth } from "@/src/lib/supabase/api-auth";
 import { getClientIp, rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/src/lib/rate-limit";
 
 const PACKAGES = [
@@ -15,9 +15,9 @@ export async function POST(request: Request) {
     if (!pack) return Response.json({ error: "Invalid package" }, { status: 400 });
 
     // Get authed user for metadata
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return Response.json({ error: "Not authenticated" }, { status: 401 });
+    const auth = await getApiAuth(request);
+    if (!auth) return Response.json({ error: "Not authenticated" }, { status: 401 });
+    const { user, supabase } = auth;
 
     const rl = rateLimit({
       key: user.id || getClientIp(request),

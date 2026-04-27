@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildSystemPrompt, buildOptimizePrompt } from "@/src/lib/ai/prompts";
 import { ParsedEventSchema } from "@/src/lib/ai/schemas";
 import { createClient } from "@/src/lib/supabase/server";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import {
   generateAI,
   classifyComplexity,
@@ -14,9 +15,26 @@ import {
 
 const PLAN_LIMITS: Record<string, number> = { free: 50, pro: 1000, ultra: 5000 };
 
-async function checkAndTrackUsage(action: string, tokensUsed: number, model: string = "claude-haiku-4-5") {
+/**
+ * Auth context that mobile API routes can pass in. When omitted, falls
+ * back to the cookie-based session (what server components & web pages use).
+ */
+export type AuthContext = { user: User; supabase: SupabaseClient };
+
+async function resolveAuth(ctx?: AuthContext): Promise<{ user: User | null; supabase: SupabaseClient }> {
+  if (ctx) return ctx;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  return { user, supabase };
+}
+
+async function checkAndTrackUsage(
+  action: string,
+  tokensUsed: number,
+  model: string = "claude-haiku-4-5",
+  ctx?: AuthContext,
+) {
+  const { user, supabase } = await resolveAuth(ctx);
   if (!user) throw new Error("Not authenticated");
 
   const { data: profile } = await supabase
@@ -110,15 +128,14 @@ export interface ChatResponse {
 export async function chatWithAI(
   messages: ChatMessage[],
   timezone: string = "Europe/Belgrade",
-  voiceMode: boolean = false
+  voiceMode: boolean = false,
+  ctx?: AuthContext,
 ): Promise<ChatResponse> {
-  const client = getClient();
   const now = new Date().toLocaleString("en-US", { timeZone: timezone });
   const todayISO = new Date().toISOString().split("T")[0];
 
   // Get user's existing events for context (with IDs for actions)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, supabase } = await resolveAuth(ctx);
   const { data: existingEvents } = user ? await supabase
     .from("events")
     .select("id, title, start_time, end_time, description, location, color")
@@ -304,7 +321,7 @@ VOICE MODE (IMPORTANT — the user is using voice, possibly without seeing the s
   });
 
   const text = aiResponse.text;
-  const usage = await checkAndTrackUsage("chat", aiResponse.tokensUsed, aiResponse.provider);
+  const usage = await checkAndTrackUsage("chat", aiResponse.tokensUsed, aiResponse.provider, ctx);
 
   // Cache read-only query responses
   if (user && isCacheableQuery(lastUserMessage)) {
@@ -347,7 +364,7 @@ VOICE MODE (IMPORTANT — the user is using voice, possibly without seeing the s
     } catch { /* fall through */ }
   }
 
-  return { message: text, events: [], actions: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
+  return { message: text, events: [], tasks: [], actions: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
 }
 
 // --- SIMPLE PARSE (kept for backward compat) ---
@@ -390,10 +407,12 @@ export async function parseEventPrompt(
 }
 
 // --- DAILY BRIEFING ---
-export async function generateDailyBriefing(timezone: string = "Europe/Belgrade"): Promise<string> {
+export async function generateDailyBriefing(
+  timezone: string = "Europe/Belgrade",
+  ctx?: AuthContext,
+): Promise<string> {
   const client = getClient();
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, supabase } = await resolveAuth(ctx);
   if (!user) throw new Error("Not authenticated");
 
   const today = new Date();
@@ -417,7 +436,7 @@ export async function generateDailyBriefing(timezone: string = "Europe/Belgrade"
 
   const text = response.content?.[0]?.type === "text" ? response.content[0].text : "";
   const totalTokens = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
-  await checkAndTrackUsage("daily_briefing", totalTokens);
+  await checkAndTrackUsage("daily_briefing", totalTokens, "claude-haiku-4-5", ctx);
   return text;
 }
 
@@ -494,11 +513,11 @@ export interface ReplanResult {
 
 export async function replanDay(
   reason: string = "I need to reorganize my day",
-  timezone: string = "Europe/Belgrade"
+  timezone: string = "Europe/Belgrade",
+  ctx?: AuthContext,
 ): Promise<ReplanResult> {
   const client = getClient();
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, supabase } = await resolveAuth(ctx);
   if (!user) throw new Error("Not authenticated");
 
   const today = new Date();
@@ -542,7 +561,7 @@ Empty arrays if no changes needed.`,
 
   const text = response.content?.[0]?.type === "text" ? response.content[0].text : "";
   const totalTokens = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
-  const usage = await checkAndTrackUsage("replan_day", totalTokens);
+  const usage = await checkAndTrackUsage("replan_day", totalTokens, "claude-haiku-4-5", ctx);
 
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return { message: text, moves: [], adds: [], removes: [], usage: { used: usage.creditsUsed, limit: usage.limit } };
@@ -621,10 +640,12 @@ export interface WeeklyReport {
   suggestions: string[];
 }
 
-export async function generateWeeklyReport(timezone: string = "Europe/Belgrade"): Promise<WeeklyReport> {
+export async function generateWeeklyReport(
+  timezone: string = "Europe/Belgrade",
+  ctx?: AuthContext,
+): Promise<WeeklyReport> {
   const client = getClient();
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, supabase } = await resolveAuth(ctx);
   if (!user) throw new Error("Not authenticated");
 
   const now = new Date();
@@ -673,7 +694,7 @@ Respond with ONLY JSON:
 
   const text = response.content?.[0]?.type === "text" ? response.content[0].text : "";
   const totalTokens = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
-  await checkAndTrackUsage("weekly_report", totalTokens);
+  await checkAndTrackUsage("weekly_report", totalTokens, "claude-haiku-4-5", ctx);
 
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (jsonMatch) {

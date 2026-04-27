@@ -1,15 +1,14 @@
 import { replanDay } from "@/src/actions/ai";
-import { createClient } from "@/src/lib/supabase/server";
+import { getApiAuth } from "@/src/lib/supabase/api-auth";
 import { getClientIp, rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/src/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await getApiAuth(request);
+    if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const rl = rateLimit({
-      key: user.id || getClientIp(request),
+      key: auth.user.id || getClientIp(request),
       scope: "ai-replan",
       ...RATE_LIMITS.ai,
     });
@@ -20,10 +19,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await replanDay();
+    const result = await replanDay("I need to reorganize my day", "Europe/Belgrade", auth);
     return Response.json(result, { headers: rateLimitHeaders(rl) });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message, message: "", moves: [], adds: [], removes: [] }, { status: 200 });
+    const errMsg = err instanceof Error ? err.message : "Unknown error";
+    return Response.json({ error: errMsg, message: "", moves: [], adds: [], removes: [] }, { status: 200 });
   }
 }

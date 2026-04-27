@@ -2,8 +2,7 @@ import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../constants/colors";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+import { apiFetch } from "../../lib/api";
 
 interface ReplanResult {
   message: string;
@@ -21,7 +20,7 @@ export function ReplanButton() {
     setLoading(true);
     setOpen(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/replan`, { method: "POST" });
+      const res = await apiFetch(`/api/ai/replan`, { method: "POST" });
       const data = await res.json();
       setResult(data);
     } catch {

@@ -90,7 +90,11 @@ export default function FriendsPage() {
   }
 
   async function handleAccept(id: string) {
-    await respondToFriendRequest(id, true);
+    const res = await respondToFriendRequest(id, true);
+    if (!res.success) {
+      toast.error(res.error || "Could not accept request");
+      return;
+    }
     setPending((p) => p.filter((x) => x.id !== id));
     const f = await getFriends();
     setFriends(f);
@@ -98,7 +102,11 @@ export default function FriendsPage() {
   }
 
   async function handleDecline(id: string) {
-    await respondToFriendRequest(id, false);
+    const res = await respondToFriendRequest(id, false);
+    if (!res.success) {
+      toast.error(res.error || "Could not decline request");
+      return;
+    }
     setPending((p) => p.filter((x) => x.id !== id));
     toast("Request declined");
   }

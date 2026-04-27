@@ -131,7 +131,7 @@ export async function POST(
       user_id: link.user_id,
       type: "booking_received",
       title: "New booking",
-      body: `${name} booked ${startDate.toLocaleString()}`,
+      message: `${name} booked ${startDate.toLocaleString()}`,
       data: { event_id: event?.id, guest_email: email },
     }).then(() => {}, () => {}); // table may not exist in dev; silent fail
 
