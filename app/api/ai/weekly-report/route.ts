@@ -24,11 +24,7 @@ export async function POST(request: Request) {
     return Response.json(result, { headers: rateLimitHeaders(rl) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({
-      error: message,
-      summary: "Could not generate report",
-      stats: { total_events: 0, total_hours: 0, busiest_day: "N/A", emptiest_day: "N/A" },
-      insights: [], suggestions: [],
-    }, { status: 200 });
+    const status = message === "Not authenticated" ? 401 : message === "LIMIT_REACHED" ? 402 : 500;
+    return Response.json({ error: message }, { status });
   }
 }

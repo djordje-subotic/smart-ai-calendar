@@ -207,4 +207,36 @@ END:VCALENDAR`;
     const [event] = parseIcs(floating);
     expect(event.start).toBe("2026-04-13T09:00:00.000Z");
   });
+
+  it("imports events with a TZID parameter (Apple/Outlook style)", () => {
+    // 09:00 in America/New_York = 14:00 UTC in January.
+    const tzid = `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:tzid-1
+SUMMARY:NYC meeting
+DTSTART;TZID=America/New_York:20260115T090000
+DTEND;TZID=America/New_York:20260115T100000
+END:VEVENT
+END:VCALENDAR`;
+    const [event] = parseIcs(tzid);
+    expect(event).toBeDefined();
+    expect(event.uid).toBe("tzid-1");
+    expect(event.start).toBe("2026-01-15T14:00:00.000Z");
+    expect(event.end).toBe("2026-01-15T15:00:00.000Z");
+  });
+
+  it("does not drop events when TZID is unknown", () => {
+    const unknown = `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:tzid-bad
+SUMMARY:Mystery zone
+DTSTART;TZID=Not/A_Real_Zone:20260413T090000
+DTEND;TZID=Not/A_Real_Zone:20260413T100000
+END:VEVENT
+END:VCALENDAR`;
+    const events = parseIcs(unknown);
+    expect(events).toHaveLength(1);
+    // Falls back to wall-clock-as-UTC instead of dropping the event.
+    expect(events[0].start).toBe("2026-04-13T09:00:00.000Z");
+  });
 });

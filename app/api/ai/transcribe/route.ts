@@ -79,13 +79,16 @@ export async function POST(request: Request) {
 
     if (!whisperRes.ok) {
       const errText = await whisperRes.text();
-      return Response.json({ error: `Whisper error: ${errText}`, text: "" }, { status: 200 });
+      // Forward upstream status so the client can distinguish auth, quota,
+      // and rate-limit conditions from a generic transcription failure.
+      const status = whisperRes.status >= 500 ? 502 : whisperRes.status;
+      return Response.json({ error: `Whisper error: ${errText}`, text: "" }, { status });
     }
 
     const data = await whisperRes.json();
     return Response.json({ text: data.text || "" });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message, text: "" }, { status: 200 });
+    return Response.json({ error: message, text: "" }, { status: 500 });
   }
 }

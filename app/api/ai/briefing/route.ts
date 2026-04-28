@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     return Response.json({ briefing }, { headers: rateLimitHeaders(rl) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message, briefing: "Could not generate briefing right now." }, { status: 200 });
+    const status = message === "Not authenticated" ? 401 : message === "LIMIT_REACHED" ? 402 : 500;
+    return Response.json({ error: message }, { status });
   }
 }

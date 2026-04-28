@@ -128,7 +128,8 @@ describe("Mobile App - Calendar", () => {
 describe("Mobile App - AI Chat", () => {
   it("should call web API for AI", () => {
     const ai = readFile(`${MOBILE}/(tabs)/ai.tsx`);
-    expect(ai).toContain("API_URL");
+    // Routed through the shared apiFetch helper so it always includes auth.
+    expect(ai).toContain("apiFetch");
     expect(ai).toContain("/api/ai/chat");
   });
 
@@ -210,7 +211,7 @@ describe("Mobile App - Tools", () => {
 
   it("templates should call API", () => {
     const tools = readFile(`${MOBILE}/(tabs)/tools.tsx`);
-    expect(tools).toContain("API_URL");
+    expect(tools).toContain("apiFetch");
     expect(tools).toContain("/api/ai/chat");
   });
 });

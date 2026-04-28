@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabase";
+import { apiFetch } from "../../src/lib/api";
 import { colors } from "../../src/constants/colors";
 import { speak } from "../../src/lib/voice";
 import { haptic } from "../../src/lib/haptics";
@@ -14,7 +15,6 @@ interface ChatAction { type: "delete" | "move" | "update"; event_title: string; 
 interface Message { role: "user" | "assistant"; content: string; events?: ChatEvent[]; actions?: ChatAction[]; eventsAdded?: boolean; }
 
 const SUGGESTIONS = ["Plan my productive day ✨", "Trening sutra u 7 💪", "Meeting every Monday 📅", "Obrisi sve za danas 🗑️", "Focus block 90 min 🧠"];
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function AIScreen() {
   const [input, setInput] = useState("");
@@ -35,12 +35,12 @@ export default function AIScreen() {
     const newHistory = [...chatHistory, { role: "user", content: userMsg }];
 
     try {
-      const res = await fetch(`${API_URL}/api/ai/chat`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const res = await apiFetch(`/api/ai/chat`, {
+        method: "POST",
         body: JSON.stringify({ messages: newHistory, timezone: "Europe/Belgrade", voiceMode }),
       });
       const result = await res.json();
-      if (result.error) throw new Error(result.error);
+      if (!res.ok || result.error) throw new Error(result.error || `HTTP ${res.status}`);
       const assistantMsg: Message = { role: "assistant", content: result.message, events: result.events || [], actions: result.actions || [] };
       setMessages([...newMessages, assistantMsg]);
       setChatHistory([...newHistory, { role: "assistant", content: result.message }]);

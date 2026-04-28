@@ -92,17 +92,56 @@ function parseDate(value: string, params: string | undefined): { iso: string; al
     };
   }
 
-  // Local / floating form — assume UTC to avoid pulling in a tz db
+  // Local / floating form (with or without TZID parameter).
+  // Without bundling a tz database we can't shift TZID-tagged times to
+  // their true UTC instant — projecting them to UTC keeps the wall-clock
+  // numbers visible to the user, which is the closest we can get.
   const local = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/.exec(value);
   if (local) {
     const [, y, mo, d, h, mi, s] = local;
+    const tzid = /TZID=([^;:]+)/i.exec(params || "")?.[1];
+    const offsetMs = tzid ? tzidOffsetMs(tzid) : 0;
     return {
-      iso: new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s)).toISOString(),
+      iso: new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s) - offsetMs).toISOString(),
       allDay: false,
     };
   }
 
   return null;
+}
+
+/**
+ * Best-effort offset lookup for an IANA TZID, in ms ahead of UTC, using the
+ * platform's Intl tz database. Returns 0 if the TZID is unknown so events
+ * still import (with wall-clock semantics) rather than being dropped.
+ */
+function tzidOffsetMs(tzid: string): number {
+  try {
+    const probe = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tzid,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(probe);
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+    const local = Date.UTC(
+      get("year"),
+      get("month") - 1,
+      get("day"),
+      get("hour") % 24,
+      get("minute"),
+      get("second"),
+    );
+    return local - probe.getTime();
+  } catch {
+    return 0;
+  }
 }
 
 function toEvent(raw: Record<string, string>): ParsedIcsEvent | null {

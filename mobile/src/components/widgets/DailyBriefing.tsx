@@ -2,8 +2,7 @@ import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../constants/colors";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+import { apiFetch } from "../../lib/api";
 
 export function DailyBriefing() {
   const [briefing, setBriefing] = useState<string | null>(null);
@@ -12,8 +11,9 @@ export function DailyBriefing() {
   async function generate() {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/briefing`, { method: "POST" });
+      const res = await apiFetch(`/api/ai/briefing`, { method: "POST" });
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       setBriefing(data.briefing || "Ready to rule your day!");
     } catch {
       setBriefing("Couldn't connect. Your day is what you make of it.");

@@ -226,20 +226,12 @@ export default function SettingsPage() {
             )}
           </motion.div>
 
-          {/* Others - coming soon */}
-          {[
-            { name: "Apple Calendar", icon: "⚪", desc: "Import and sync with iCloud" },
-            { name: "Outlook", icon: "🔷", desc: "Sync with Microsoft Outlook" },
-          ].map((cal, i) => (
-            <motion.div key={cal.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.05 }} className="flex items-center gap-4 rounded-xl border border-border/30 bg-card/50 p-4">
-              <span className="text-xl">{cal.icon}</span>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium">{cal.name}</h4>
-                <p className="text-[11px] text-muted-foreground">{cal.desc}</p>
-              </div>
-              <span className="text-[10px] text-muted-foreground/50 font-medium">Coming soon</span>
-            </motion.div>
-          ))}
+          {/* Apple Calendar, Outlook, and other ICS-compatible feeds are
+              handled by the "External calendars" panel below — paste a
+              webcal:// or https:// ICS URL to subscribe. */}
+          <p className="text-[11px] text-muted-foreground/60 px-1">
+            Apple Calendar, Outlook, and other calendars: see <span className="text-foreground/80">External calendars</span> below.
+          </p>
         </div>
       </div>
 

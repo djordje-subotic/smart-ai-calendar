@@ -3,7 +3,7 @@ import { router } from "expo-router";
 
 /**
  * Parses deep link URLs like:
- * krowna://event/123 → opens event details
+ * krowna://event/123 → opens calendar focused on that event
  * krowna://friend/xyz → opens friend profile
  * krowna://calendar → opens calendar
  * krowna://today → opens today view
@@ -11,33 +11,37 @@ import { router } from "expo-router";
 export function handleDeepLink(url: string): boolean {
   try {
     const parsed = Linking.parse(url);
-    const path = parsed.path || parsed.hostname || "";
+    // expo-linking parses `krowna://event/123` as hostname=event, path=123
+    // and `krowna:event/123` (web-style) as path=event/123. Handle both.
+    const route = (parsed.hostname || parsed.path || "").replace(/^\//, "");
+    const [head, ...rest] = route.split("/");
+    const id = rest.join("/");
 
-    if (path.startsWith("event/") || parsed.hostname === "event") {
-      router.push("/(tabs)/calendar");
+    if (head === "event") {
+      router.push({ pathname: "/(tabs)/calendar", params: id ? { eventId: id } : undefined });
       return true;
     }
-    if (path.startsWith("friend/") || parsed.hostname === "friend") {
-      router.push("/(tabs)/friends");
+    if (head === "friend") {
+      router.push({ pathname: "/(tabs)/friends", params: id ? { friendId: id } : undefined });
       return true;
     }
-    if (path === "today" || parsed.hostname === "today") {
+    if (head === "today") {
       router.push("/(tabs)/today");
       return true;
     }
-    if (path === "calendar" || parsed.hostname === "calendar") {
+    if (head === "calendar") {
       router.push("/(tabs)/calendar");
       return true;
     }
-    if (path === "ai" || parsed.hostname === "ai") {
+    if (head === "ai") {
       router.push("/(tabs)/ai");
       return true;
     }
-    if (path === "habits" || parsed.hostname === "habits") {
+    if (head === "habits") {
       router.push("/(tabs)/habits");
       return true;
     }
-    if (path === "tasks" || parsed.hostname === "tasks") {
+    if (head === "tasks") {
       router.push("/(tabs)/tasks");
       return true;
     }

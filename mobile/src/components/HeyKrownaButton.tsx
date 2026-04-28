@@ -4,7 +4,7 @@ import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { haptic } from "../lib/haptics";
-import { supabase } from "../lib/supabase";
+import { apiFetch } from "../lib/api";
 
 interface Props {
   onTranscript?: (text: string) => void;
@@ -73,7 +73,6 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
       setRecording(null);
 
       if (uri) {
-        const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
         const formData = new FormData();
         formData.append("audio", {
           uri,
@@ -81,17 +80,8 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
           name: "recording.m4a",
         } as any);
 
-        // Mobile doesn't have web cookies — pass the Supabase access token
-        // as a Bearer header so the API route can authenticate the request.
-        const { data: { session } } = await supabase.auth.getSession();
-        const headers: Record<string, string> = {};
-        if (session?.access_token) {
-          headers["Authorization"] = `Bearer ${session.access_token}`;
-        }
-
-        const res = await fetch(`${API_URL}/api/ai/transcribe`, {
+        const res = await apiFetch(`/api/ai/transcribe`, {
           method: "POST",
-          headers,
           body: formData,
         });
         const data = await res.json();
