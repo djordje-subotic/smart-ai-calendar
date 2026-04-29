@@ -7,10 +7,12 @@ import { getNotifications, getUnreadCount, markNotificationRead } from "@/src/ac
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 
+type Notification = Awaited<ReturnType<typeof getNotifications>>[number];
+
 export function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     getUnreadCount().then(setUnread);
@@ -24,7 +26,7 @@ export function NotificationBell() {
       const data = await getNotifications();
       setNotifications(data);
       // Mark all as read
-      for (const n of data.filter((n: any) => !n.read)) {
+      for (const n of data.filter((n: Notification) => !n.read)) {
         await markNotificationRead(n.id);
       }
       setUnread(0);

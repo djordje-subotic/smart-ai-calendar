@@ -43,30 +43,33 @@ export default function ProfileScreen() {
   const [constraints, setConstraints] = useState<string[]>([]);
   const [idealDay, setIdealDay] = useState("");
 
-  useEffect(() => { load(); }, []);
-
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-    if (data) {
-      setDisplayName(data.display_name || "");
-      setAvatarPreset(data.avatar_preset || null);
-      setDateOfBirth(data.date_of_birth ? new Date(data.date_of_birth) : null);
-      setOccupation(data.occupation || "");
-      setBio(data.bio || "");
-      setCity(data.city || "");
-      setMotto(data.motto || "");
-      setMotivationStyle(data.motivation_style || "friendly");
-      setGoals(data.goals || []);
-      setHabits(data.daily_habits || []);
-      setHobbies(data.hobbies || []);
-      setPriorities(data.priorities || []);
-      setConstraints(data.constraints || []);
-      setIdealDay(data.ideal_day || "");
-    }
-    setLoading(false);
-  }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      if (cancelled) return;
+      if (data) {
+        setDisplayName(data.display_name || "");
+        setAvatarPreset(data.avatar_preset || null);
+        setDateOfBirth(data.date_of_birth ? new Date(data.date_of_birth) : null);
+        setOccupation(data.occupation || "");
+        setBio(data.bio || "");
+        setCity(data.city || "");
+        setMotto(data.motto || "");
+        setMotivationStyle(data.motivation_style || "friendly");
+        setGoals(data.goals || []);
+        setHabits(data.daily_habits || []);
+        setHobbies(data.hobbies || []);
+        setPriorities(data.priorities || []);
+        setConstraints(data.constraints || []);
+        setIdealDay(data.ideal_day || "");
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   function toggle(list: string[], setList: (v: string[]) => void, item: string) {
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);

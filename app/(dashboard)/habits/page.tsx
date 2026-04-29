@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Target, Plus, Flame, Trophy, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,7 @@ export default function HabitsPage() {
   const today = format(new Date(), "yyyy-MM-dd");
   const currentMonth = format(new Date(), "yyyy-MM");
 
-  useEffect(() => { loadAll(); }, []);
-
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const data = await getHabits();
     setHabits(data);
@@ -38,7 +36,9 @@ export default function HabitsPage() {
     }
     setCompletedMap(map);
     setLoading(false);
-  }
+  }, [currentMonth]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   async function handleToggle(habitId: string) {
     playSound("complete");

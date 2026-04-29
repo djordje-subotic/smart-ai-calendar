@@ -40,36 +40,40 @@ export default function FriendsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => { load(); }, []);
-
-  async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: friendships } = await supabase.from("friends")
-      .select("id, user_id, friend_id, status")
-      .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
-      .eq("status", "accepted");
-    if (!friendships) { setLoading(false); return; }
-    const enriched: Friend[] = [];
-    for (const f of friendships) {
-      const friendId = f.user_id === user.id ? f.friend_id : f.user_id;
-      const { data: profile } = await supabase.from("profiles")
-        .select("full_name, display_name, city, occupation, date_of_birth, motto, avatar_preset")
-        .eq("id", friendId).single();
-      enriched.push({
-        id: friendId,
-        name: profile?.full_name || "User",
-        display_name: profile?.display_name || null,
-        city: profile?.city || null,
-        occupation: profile?.occupation || null,
-        date_of_birth: profile?.date_of_birth || null,
-        motto: profile?.motto || null,
-        avatar_preset: profile?.avatar_preset || null,
-      });
-    }
-    setFriends(enriched);
-    setLoading(false);
-  }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data: friendships } = await supabase.from("friends")
+        .select("id, user_id, friend_id, status")
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq("status", "accepted");
+      if (cancelled) return;
+      if (!friendships) { setLoading(false); return; }
+      const enriched: Friend[] = [];
+      for (const f of friendships) {
+        const friendId = f.user_id === user.id ? f.friend_id : f.user_id;
+        const { data: profile } = await supabase.from("profiles")
+          .select("full_name, display_name, city, occupation, date_of_birth, motto, avatar_preset")
+          .eq("id", friendId).single();
+        enriched.push({
+          id: friendId,
+          name: profile?.full_name || "User",
+          display_name: profile?.display_name || null,
+          city: profile?.city || null,
+          occupation: profile?.occupation || null,
+          date_of_birth: profile?.date_of_birth || null,
+          motto: profile?.motto || null,
+          avatar_preset: profile?.avatar_preset || null,
+        });
+      }
+      if (cancelled) return;
+      setFriends(enriched);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleAdd() {
     if (!email.trim()) return;

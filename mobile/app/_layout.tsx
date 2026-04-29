@@ -64,7 +64,7 @@ export default function RootLayout() {
       cleanupNotifs?.();
       cleanupLinks?.();
     };
-  }, []);
+  }, [setSession]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>

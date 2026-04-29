@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Alert } from "react-native";
 import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,7 +31,7 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
   const [isRecording, setIsRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pulse = useRef(new Animated.Value(1)).current;
+  const pulse = useMemo(() => new Animated.Value(1), []);
 
   useEffect(() => {
     if (isRecording) {
@@ -45,7 +45,7 @@ export function HeyKrownaButton({ onTranscript, compact }: Props) {
       pulse.stopAnimation();
       pulse.setValue(1);
     }
-  }, [isRecording]);
+  }, [isRecording, pulse]);
 
   // Cleanup on unmount — don't leave a recorder running in the background
   useEffect(() => {

@@ -12,18 +12,26 @@ import {
 } from "@/src/lib/calendar/utils";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 
 const dayHeaders = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
+// Returns true after hydration so SSR + client first paint match.
+const subscribeNoop = () => () => {};
+function useHydrated() {
+  return useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
+}
+
 export function MiniCalendar() {
   const { selectedDate, setSelectedDate, setView } = useCalendarStore();
   const [displayMonth, setDisplayMonth] = useState(selectedDate);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const days = getMonthDays(displayMonth);
-
-  useEffect(() => { setMounted(true); }, []);
 
   return (
     <div className="select-none">

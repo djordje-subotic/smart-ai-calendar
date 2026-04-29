@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { colors } from "../constants/colors";
 import { addMonths, format, isSameMonth } from "date-fns";
@@ -11,15 +11,19 @@ interface Props {
 export function MonthPicker({ selected, onSelect }: Props) {
   const scrollRef = useRef<ScrollView>(null);
 
-  const now = new Date();
-  const months = Array.from({ length: 18 }, (_, i) => addMonths(now, i - 3));
+  const now = useMemo(() => new Date(), []);
+  const months = useMemo(
+    () => Array.from({ length: 18 }, (_, i) => addMonths(now, i - 3)),
+    [now],
+  );
 
   useEffect(() => {
     const idx = months.findIndex((m) => isSameMonth(m, selected));
     if (idx >= 0 && scrollRef.current) {
-      setTimeout(() => scrollRef.current?.scrollTo({ x: idx * 72, animated: true }), 100);
+      const t = setTimeout(() => scrollRef.current?.scrollTo({ x: idx * 72, animated: true }), 100);
+      return () => clearTimeout(t);
     }
-  }, [selected]);
+  }, [selected, months]);
 
   return (
     <View style={s.wrap}>

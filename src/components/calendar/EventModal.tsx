@@ -76,7 +76,7 @@ export function EventModal({ events }: EventModalProps) {
       setRecurrence("none");
       setMeetingUrl("");
     }
-  }, [existingEvent, selectedDate, isEventModalOpen]);
+  }, [existingEvent, selectedDate, isEventModalOpen, prefillStartTime, prefillEndTime]);
 
   const isSaving = createEvent.isPending || updateEvent.isPending;
 

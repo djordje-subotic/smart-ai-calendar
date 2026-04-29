@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useSyncExternalStore } from "react";
 import { useHeyKrowna } from "@/src/hooks/useHeyKrowna";
 import { playSound } from "@/src/lib/sounds";
 import { migrateLocalStorageKey } from "@/src/lib/storageMigration";
@@ -11,20 +11,32 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff, Loader2, Volume2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import type { RecurrenceRule } from "@/src/types/event";
+
+const subscribeNoop = () => () => {};
+function useHydrated() {
+  return useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
+}
 
 export function HeyKrownaIndicator() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const [enabled, setEnabled] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setMounted(true);
+    let cancelled = false;
     // Load voice preference from DB, fallback to localStorage
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
+      if (cancelled) return;
       if (user) {
         supabase.from("profiles").select("voice_enabled").eq("id", user.id).single().then(({ data }) => {
+          if (cancelled) return;
           const voiceOn = data?.voice_enabled || false;
           setEnabled(voiceOn);
           localStorage.setItem("krowna-hey-mode", String(voiceOn));
@@ -34,6 +46,7 @@ export function HeyKrownaIndicator() {
         setEnabled(stored === "true");
       }
     });
+    return () => { cancelled = true; };
   }, []);
 
   const handleCommand = useCallback(async (command: string): Promise<string> => {
@@ -53,7 +66,7 @@ export function HeyKrownaIndicator() {
             end_time: event.end_time,
             all_day: false,
             color: event.color || "#3B82F6",
-            recurrence_rule: event.recurrence as any,
+            recurrence_rule: (event.recurrence ?? null) as RecurrenceRule | null,
             reminder_minutes: [15],
             source: "ai",
             external_id: null,

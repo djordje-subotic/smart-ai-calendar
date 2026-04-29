@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -64,7 +64,6 @@ export default function TodayScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { loadToday(); }, [loadToday]));
-  useEffect(() => { loadToday(); }, []);
 
   const now = new Date();
   const upcoming = events.filter((e) => new Date(e.start_time) > now);

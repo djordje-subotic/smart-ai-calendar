@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getTasks, createTask, updateTaskStatus, deleteTask } from "@/src/actions/tasks";
 import { Task } from "@/src/types/task";
 import { playSound } from "@/src/lib/sounds";
@@ -31,12 +31,12 @@ export function TaskPanel() {
   const [newColor, setNewColor] = useState<string>(EVENT_COLORS[4]);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { loadTasks(); }, []);
-
-  async function loadTasks() {
+  const loadTasks = useCallback(async () => {
     const data = await getTasks();
     setTasks(data);
-  }
+  }, []);
+
+  useEffect(() => { loadTasks(); }, [loadTasks]);
 
   function resetForm() {
     setNewTitle("");
