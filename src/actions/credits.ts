@@ -19,15 +19,19 @@ export async function getBonusCredits(): Promise<number> {
 }
 
 export async function purchaseCredits(packageId: string): Promise<{ success: boolean; newBalance: number; error?: string }> {
+  // Production credit purchases must go through /api/credits/checkout +
+  // Lemon Squeezy webhook so payment is verified before credits are granted.
+  // This server action is a dev-only convenience that bypasses payment.
+  if (process.env.NODE_ENV === "production") {
+    return { success: false, newBalance: 0, error: "Use the checkout flow to buy credits" };
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, newBalance: 0, error: "Not authenticated" };
 
   const pack = CREDIT_PACKAGES.find((p) => p.id === packageId);
   if (!pack) return { success: false, newBalance: 0, error: "Invalid package" };
-
-  // In production this would go through Stripe first.
-  // For now we directly add credits (simulating successful payment).
 
   const { data: profile } = await supabase
     .from("profiles")

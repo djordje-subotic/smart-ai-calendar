@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Zap, Check, Sparkles, Crown } from "lucide-react";
 import { motion } from "framer-motion";
-import { purchaseCredits } from "@/src/actions/credits";
 import { CREDIT_PACKAGES, type CreditPackage } from "@/src/constants/credits";
 import { cn } from "@/lib/utils";
 

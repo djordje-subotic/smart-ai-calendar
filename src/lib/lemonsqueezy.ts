@@ -111,8 +111,15 @@ export async function verifyLemonSqueezyWebhook(
   if (!signature) return false;
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
   if (!secret) {
+    // Refuse to accept unsigned webhooks in production — without this guard
+    // a missing env var would let attackers forge webhook events to grant
+    // themselves credits or change subscription state.
+    if (process.env.NODE_ENV === "production") {
+      console.error("LEMONSQUEEZY_WEBHOOK_SECRET missing in production — rejecting webhook");
+      return false;
+    }
     console.warn("LEMONSQUEEZY_WEBHOOK_SECRET not set — webhook verification skipped (DEV ONLY)");
-    return true; // Allow in dev
+    return true;
   }
 
   const crypto = await import("crypto");

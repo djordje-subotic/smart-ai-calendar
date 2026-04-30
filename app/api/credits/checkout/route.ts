@@ -55,7 +55,15 @@ export async function POST(request: Request) {
       }
     }
 
-    // Dev fallback - simulated success (adds credits directly)
+    // Dev fallback — simulated success (adds credits directly). Refuse in
+    // production so a misconfigured deploy can't hand out free credits.
+    if (process.env.NODE_ENV === "production") {
+      return Response.json(
+        { error: "Payment provider is not configured. Please try again later." },
+        { status: 503 }
+      );
+    }
+
     const { data: profile } = await supabase.from("profiles").select("bonus_credits").eq("id", user.id).single();
     const current = profile?.bonus_credits || 0;
     const newBalance = current + pack.credits;

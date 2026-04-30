@@ -14,6 +14,26 @@ import {
 
 const PLAN_LIMITS: Record<string, number> = { free: 50, pro: 1000, ultra: 5000 };
 
+// Returns ISO strings for the start and end of the day containing `at` in
+// `timezone`. Works without bringing in a TZ library by formatting the wall
+// clock in the target zone and reading back the offset.
+function dayBoundsForTimezone(at: Date, timezone: string): { startOfDay: string; endOfDay: string } {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(at).map((p) => [p.type, p.value]));
+  // ISO assembled from local-zone wall clock; treating it as UTC tells us
+  // the offset between zone and UTC for this exact moment.
+  const localAsUtc = Date.parse(`${parts.year}-${parts.month}-${parts.day}T${parts.hour === "24" ? "00" : parts.hour}:${parts.minute}:${parts.second}Z`);
+  const offsetMs = localAsUtc - at.getTime();
+  // Local midnight in the target zone, expressed as a UTC instant
+  const startMs = Date.parse(`${parts.year}-${parts.month}-${parts.day}T00:00:00Z`) - offsetMs;
+  const endMs = startMs + 24 * 60 * 60 * 1000 - 1;
+  return { startOfDay: new Date(startMs).toISOString(), endOfDay: new Date(endMs).toISOString() };
+}
+
 async function checkAndTrackUsage(action: string, tokensUsed: number, model: string = "claude-haiku-4-5") {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,7 +52,13 @@ async function checkAndTrackUsage(action: string, tokensUsed: number, model: str
   let creditsUsed = profile.ai_credits_used || 0;
   const bonusCredits = profile.bonus_credits || 0;
 
-  if (now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()) {
+  // Compare in UTC so the reset boundary is consistent regardless of server
+  // timezone — getMonth()/getFullYear() are local-time and would shift the
+  // boundary by up to a day for users near a TZ edge.
+  if (
+    now.getUTCMonth() !== resetAt.getUTCMonth() ||
+    now.getUTCFullYear() !== resetAt.getUTCFullYear()
+  ) {
     creditsUsed = 0;
     await supabase.from("profiles").update({ ai_credits_used: 0, ai_credits_reset_at: now.toISOString() }).eq("id", user.id);
   }
@@ -396,9 +422,10 @@ export async function generateDailyBriefing(timezone: string = "Europe/Belgrade"
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  const today = new Date();
-  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+  // Compute "today" in the user's timezone. The server runs in UTC, so using
+  // local Date math here would shift the day boundary by hours and miss the
+  // user's first/last event (e.g. an evening dinner showing up as tomorrow).
+  const { startOfDay, endOfDay } = dayBoundsForTimezone(new Date(), timezone);
 
   const { data: events } = await supabase.from("events")
     .select("title, start_time, end_time, location")

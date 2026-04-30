@@ -14,11 +14,25 @@ export function handleDeepLink(url: string): boolean {
     const path = parsed.path || parsed.hostname || "";
 
     if (path.startsWith("event/") || parsed.hostname === "event") {
-      router.push("/(tabs)/calendar");
+      // krowna://event/<id> — preserve the id so the calendar can scroll to /
+      // open the specific event when it mounts.
+      const eventId = path.startsWith("event/")
+        ? path.slice("event/".length)
+        : (parsed.path || "").replace(/^\//, "");
+      router.push({
+        pathname: "/(tabs)/calendar",
+        params: eventId ? { eventId } : {},
+      });
       return true;
     }
     if (path.startsWith("friend/") || parsed.hostname === "friend") {
-      router.push("/(tabs)/friends");
+      const friendId = path.startsWith("friend/")
+        ? path.slice("friend/".length)
+        : (parsed.path || "").replace(/^\//, "");
+      router.push({
+        pathname: "/(tabs)/friends",
+        params: friendId ? { friendId } : {},
+      });
       return true;
     }
     if (path === "today" || parsed.hostname === "today") {

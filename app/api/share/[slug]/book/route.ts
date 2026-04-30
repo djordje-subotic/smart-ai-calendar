@@ -123,6 +123,11 @@ export async function POST(
 
     if (bookingError) {
       console.error("booking insert failed", bookingError);
+      // Booking record failed — roll back the event we just created so the
+      // host's calendar isn't littered with orphan slots.
+      if (event?.id) {
+        await supabase.from("events").delete().eq("id", event.id);
+      }
       return Response.json({ error: "Could not save booking" }, { status: 500 });
     }
 
@@ -131,7 +136,7 @@ export async function POST(
       user_id: link.user_id,
       type: "booking_received",
       title: "New booking",
-      body: `${name} booked ${startDate.toLocaleString()}`,
+      message: `${name} booked ${startDate.toLocaleString()}`,
       data: { event_id: event?.id, guest_email: email },
     }).then(() => {}, () => {}); // table may not exist in dev; silent fail
 
@@ -139,9 +144,18 @@ export async function POST(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://krowna.com";
     const { data: hostProfile } = await supabase
       .from("profiles")
-      .select("full_name, email")
+      .select("full_name")
       .eq("id", link.user_id)
       .maybeSingle();
+
+    // Email lives on auth.users, not profiles. Use admin API to fetch it.
+    let hostEmail: string | null = null;
+    try {
+      const { data: hostAuth } = await supabase.auth.admin.getUserById(link.user_id);
+      hostEmail = hostAuth?.user?.email ?? null;
+    } catch {
+      // admin API requires service role key; if missing we skip the host email
+    }
 
     const guestMsg = bookingGuestEmail({
       guestName: name,
@@ -153,7 +167,7 @@ export async function POST(
     });
     sendEmail({ to: email, ...guestMsg }).catch(() => {});
 
-    if (hostProfile?.email) {
+    if (hostEmail) {
       const hostMsg = bookingHostEmail({
         guestName: name,
         guestEmail: email,
@@ -162,7 +176,7 @@ export async function POST(
         notes: notes || null,
         appUrl,
       });
-      sendEmail({ to: hostProfile.email, ...hostMsg, replyTo: email }).catch(() => {});
+      sendEmail({ to: hostEmail, ...hostMsg, replyTo: email }).catch(() => {});
     }
 
     return Response.json({ ok: true }, { headers: rateLimitHeaders(rl) });

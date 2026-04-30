@@ -72,6 +72,25 @@ describe("booking input validation (contract)", () => {
   });
 });
 
+describe("booking notification contract", () => {
+  // The notifications table schema in supabase/migrations/007_social_scheduling.sql
+  // names the body column `message`, not `body`. Inserts using `body` were
+  // silently dropped because the booking handler swallowed insert errors.
+  it("uses message (not body) for notification text", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const route = readFileSync(
+      resolve(process.cwd(), "app/api/share/[slug]/book/route.ts"),
+      "utf8"
+    );
+    // Inside the booking notification insert, expect message: ... not body: ...
+    const insertBlock = route.slice(route.indexOf('type: "booking_received"'));
+    const cut = insertBlock.slice(0, insertBlock.indexOf("})"));
+    expect(cut).toContain("message:");
+    expect(cut).not.toContain("body:");
+  });
+});
+
 describe("booking time validation", () => {
   it("rejects end-before-start", () => {
     const start = new Date("2026-04-13T14:00:00Z");

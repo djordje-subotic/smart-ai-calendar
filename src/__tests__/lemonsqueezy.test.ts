@@ -56,7 +56,24 @@ describe("verifyLemonSqueezyWebhook", () => {
 
   it("allows in dev when webhook secret is not set", async () => {
     delete process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
-    await expect(verifyLemonSqueezyWebhook(PAYLOAD, "any-sig")).resolves.toBe(true);
+    // vitest sets NODE_ENV=test by default — assignment goes through the
+    // proxy and avoids the readonly-descriptor trap from defineProperty
+    (process.env as Record<string, string>).NODE_ENV = "development";
+    try {
+      await expect(verifyLemonSqueezyWebhook(PAYLOAD, "any-sig")).resolves.toBe(true);
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = "test";
+    }
+  });
+
+  it("rejects in production when webhook secret is not set", async () => {
+    delete process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+    (process.env as Record<string, string>).NODE_ENV = "production";
+    try {
+      await expect(verifyLemonSqueezyWebhook(PAYLOAD, "any-sig")).resolves.toBe(false);
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = "test";
+    }
   });
 
   it("is case-sensitive about the signature encoding", async () => {

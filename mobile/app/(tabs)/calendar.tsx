@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, router } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import { getCached, setCached } from "../../src/lib/offlineCache";
 import { useAuthStore } from "../../src/stores/authStore";
@@ -58,6 +58,19 @@ export default function CalendarScreen() {
 
   useEffect(() => { loadEvents(); }, [loadEvents]);
   useFocusEffect(useCallback(() => { loadEvents(); }, [loadEvents]));
+
+  // krowna://event/<id> deep link — once events are loaded, locate the
+  // requested event and open the edit modal. Clear the param afterwards so
+  // a re-focus doesn't re-trigger the modal.
+  const params = useLocalSearchParams<{ eventId?: string }>();
+  useEffect(() => {
+    if (!params?.eventId || events.length === 0) return;
+    const target = events.find((e) => e.id === params.eventId);
+    if (target) {
+      openEdit(target);
+      router.setParams({ eventId: undefined });
+    }
+  }, [params?.eventId, events]);
 
   function openEdit(event: CalendarEvent) {
     setEditingEvent({

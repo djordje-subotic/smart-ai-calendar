@@ -207,6 +207,20 @@ describe("Social UI Components", () => {
       expect(page).toContain("find_user_by_email");
     });
 
+    it("find_user_by_email is defined as an RPC in a migration", () => {
+      // Code on web and mobile depends on this function existing — without
+      // the migration, every "Add Friend" attempt fails with "function does
+      // not exist" and the friend system is dead.
+      const fs = require("node:fs");
+      const path = require("node:path");
+      const dir = path.resolve(process.cwd(), "supabase/migrations");
+      const sql = fs.readdirSync(dir)
+        .filter((f: string) => f.endsWith(".sql"))
+        .map((f: string) => fs.readFileSync(path.join(dir, f), "utf8"))
+        .join("\n");
+      expect(sql).toMatch(/CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION[^(]*find_user_by_email/i);
+    });
+
     it("mobile friends should show profile details", () => {
       const page = readFile("mobile/app/(tabs)/friends.tsx");
       expect(page).toContain("occupation");
