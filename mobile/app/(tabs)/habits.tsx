@@ -106,6 +106,22 @@ export default function HabitsScreen() {
         const { error } = await supabase.from("habit_completions").insert({ habit_id: habitId, user_id: user.id, completed_date: today });
         if (error) throw error;
       }
+
+      // Streaks are recomputed server-side by the habit_completions trigger
+      // (migration 019). Pull the new value back so the flame/best icons stay
+      // in sync with reality.
+      const { data: refreshed } = await supabase
+        .from("habits")
+        .select("streak_current, streak_best")
+        .eq("id", habitId)
+        .single();
+      if (refreshed) {
+        setHabits((prev) => prev.map((h) =>
+          h.id === habitId
+            ? { ...h, streak_current: refreshed.streak_current, streak_best: refreshed.streak_best }
+            : h
+        ));
+      }
     } catch {
       setCompletions(prevCompletions); // Revert on error
     }

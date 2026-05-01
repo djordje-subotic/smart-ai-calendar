@@ -83,7 +83,7 @@ export function EventModal({ events }: EventModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!startTime || !endTime || endTime <= startTime) {
-      alert("Please set valid start and end times");
+      toast.error("Please set valid start and end times");
       return;
     }
     const startDateTime = new Date(`${date}T${startTime}`).toISOString();
@@ -111,21 +111,30 @@ export function EventModal({ events }: EventModalProps) {
       status: "confirmed" as const,
     };
 
-    if (existingEvent) {
-      await updateEvent.mutateAsync({ id: existingEvent.id, updates: eventData });
-      toast.success("Event updated");
-    } else {
-      await createEvent.mutateAsync(eventData);
-      toast.success("Event created");
+    try {
+      if (existingEvent) {
+        await updateEvent.mutateAsync({ id: existingEvent.id, updates: eventData });
+        toast.success("Event updated");
+      } else {
+        await createEvent.mutateAsync(eventData);
+        toast.success("Event created");
+      }
+      closeEventModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not save event";
+      toast.error(message);
     }
-    closeEventModal();
   }
 
   async function handleDelete() {
-    if (existingEvent) {
+    if (!existingEvent) return;
+    try {
       await deleteEventMutation.mutateAsync(existingEvent.id);
       toast.success("Event deleted");
       closeEventModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not delete event";
+      toast.error(message);
     }
   }
 

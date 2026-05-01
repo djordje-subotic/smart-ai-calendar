@@ -126,12 +126,13 @@ export async function POST(
       return Response.json({ error: "Could not save booking" }, { status: 500 });
     }
 
-    // Notify the host (in-app)
+    // Notify the host (in-app). The notifications table has a `message` column
+    // (see migration 007); using `body` would silently no-op.
     await supabase.from("notifications").insert({
       user_id: link.user_id,
       type: "booking_received",
       title: "New booking",
-      body: `${name} booked ${startDate.toLocaleString()}`,
+      message: `${name} booked ${startDate.toLocaleString()}`,
       data: { event_id: event?.id, guest_email: email },
     }).then(() => {}, () => {}); // table may not exist in dev; silent fail
 

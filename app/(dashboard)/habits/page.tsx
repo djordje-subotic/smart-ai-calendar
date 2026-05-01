@@ -66,9 +66,7 @@ export default function HabitsPage() {
     }));
 
     // Server update in background
-    toggleCompletion(habitId, today).then((result) => {
-      console.log("Toggle result:", result, "for habit:", habitId, "date:", today);
-    }).catch((err) => {
+    toggleCompletion(habitId, today).catch((err) => {
       console.error("Toggle failed:", err);
       // Revert on error
       loadAll();

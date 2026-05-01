@@ -214,4 +214,19 @@ describe("Social UI Components", () => {
       expect(page).toContain("date_of_birth");
     });
   });
+
+  describe("find_user_by_email RPC migration", () => {
+    it("migration 018 defines find_user_by_email function", () => {
+      const sql = readFile("supabase/migrations/018_find_user_by_email.sql");
+      expect(sql).toContain("CREATE OR REPLACE FUNCTION public.find_user_by_email");
+      expect(sql).toContain("RETURNS UUID");
+      expect(sql).toContain("auth.users");
+      expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.find_user_by_email(TEXT) TO authenticated");
+    });
+
+    it("sendFriendRequest no longer references the missing get_user_id_by_email RPC", () => {
+      const code = readFile("src/actions/social.ts");
+      expect(code).not.toContain("get_user_id_by_email");
+    });
+  });
 });
