@@ -46,8 +46,9 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
 
   // Pull host's busy windows for the availability horizon. Only start/end
   // times are exposed — never titles or notes.
-  const horizonEnd = new Date(Date.now() + (link.days_ahead + 1) * 24 * 60 * 60 * 1000).toISOString();
-  const now = new Date().toISOString();
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
+  const horizonEnd = new Date(nowDate.getTime() + (link.days_ahead + 1) * 24 * 60 * 60 * 1000).toISOString();
 
   // We need a service-role read for busy times (event rows are not public).
   // Fall back to empty if service role isn't configured — slots still render,

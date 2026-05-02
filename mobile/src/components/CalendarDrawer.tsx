@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, Dimensions } from "react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { KrownaLogo } from "./KrownaLogo";
@@ -26,8 +26,8 @@ interface Props {
 }
 
 export function CalendarDrawer({ visible, view, onSelectView, onClose, userEmail }: Props) {
-  const slide = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
-  const fade = useRef(new Animated.Value(0)).current;
+  const [slide] = useState(() => new Animated.Value(-DRAWER_WIDTH));
+  const [fade] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (visible) {
@@ -41,7 +41,7 @@ export function CalendarDrawer({ visible, view, onSelectView, onClose, userEmail
         Animated.timing(fade, { toValue: 0, duration: 200, useNativeDriver: true }),
       ]).start();
     }
-  }, [visible]);
+  }, [visible, slide, fade]);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>

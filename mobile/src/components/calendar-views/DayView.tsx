@@ -103,33 +103,33 @@ function DraggableEvent({
   event: DayEvent; top: number; height: number;
   onPress: () => void; onLongPress: () => void; onDragEnd: (newTop: number) => void; isDragging: boolean;
 }) {
-  const pan = useRef(new Animated.Value(0)).current;
+  const [pan] = useState(() => new Animated.Value(0));
   const [active, setActive] = useState(false);
   const latestTop = useRef(top);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: () => active,
-      onPanResponderGrant: () => {
-        pan.setValue(0);
-      },
-      onPanResponderMove: (_, gesture) => {
-        pan.setValue(gesture.dy);
-        latestTop.current = top + gesture.dy;
-      },
-      onPanResponderRelease: () => {
-        onDragEnd(latestTop.current);
-        setActive(false);
-        pan.setValue(0);
-        haptic.success();
-      },
-      onPanResponderTerminate: () => {
-        setActive(false);
-        pan.setValue(0);
-      },
-    })
-  ).current;
+  // Recreate PanResponder when `top` or `active` changes so the gesture handlers
+  // close over the latest values. PanResponder is cheap to construct.
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: () => active,
+    onPanResponderGrant: () => {
+      pan.setValue(0);
+    },
+    onPanResponderMove: (_, gesture) => {
+      pan.setValue(gesture.dy);
+      latestTop.current = top + gesture.dy;
+    },
+    onPanResponderRelease: () => {
+      onDragEnd(latestTop.current);
+      setActive(false);
+      pan.setValue(0);
+      haptic.success();
+    },
+    onPanResponderTerminate: () => {
+      setActive(false);
+      pan.setValue(0);
+    },
+  });
 
   return (
     <Animated.View

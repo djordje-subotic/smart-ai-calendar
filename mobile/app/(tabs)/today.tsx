@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +23,7 @@ import { format } from "date-fns";
 interface Event {
   id: string; title: string; description: string | null; start_time: string; end_time: string;
   color: string; location: string | null; meeting_url: string | null; source: string;
-  recurrence_rule?: any;
+  recurrence_rule?: unknown;
 }
 
 export default function TodayScreen() {
@@ -35,7 +35,9 @@ export default function TodayScreen() {
   const today = new Date();
 
   const loadToday = useCallback(async () => {
-    const cacheKey = `today:${today.toISOString().split("T")[0]}`;
+    // Recompute "today" at load time so the screen survives a midnight crossing.
+    const now = new Date();
+    const cacheKey = `today:${now.toISOString().split("T")[0]}`;
 
     // Show cached data first so the UI never blocks on the network.
     const cached = await getCached<{ events: Event[]; tasks: typeof tasks }>(cacheKey);
@@ -44,12 +46,12 @@ export default function TodayScreen() {
       setTasks(cached.tasks);
     }
 
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
     try {
       const [eventsRes, tasksRes] = await Promise.all([
         supabase.from("events").select("*").gte("start_time", start).lte("start_time", end).order("start_time"),
-        supabase.from("tasks").select("id, title, status, priority").eq("due_date", today.toISOString().split("T")[0]).neq("status", "done"),
+        supabase.from("tasks").select("id, title, status, priority").eq("due_date", now.toISOString().split("T")[0]).neq("status", "done"),
       ]);
       const fresh = { events: eventsRes.data || [], tasks: tasksRes.data || [] };
       setEvents(fresh.events);
@@ -64,7 +66,6 @@ export default function TodayScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { loadToday(); }, [loadToday]));
-  useEffect(() => { loadToday(); }, []);
 
   const now = new Date();
   const upcoming = events.filter((e) => new Date(e.start_time) > now);

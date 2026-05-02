@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Linking } from "react-native";
+import { useState, useCallback } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
@@ -17,12 +17,12 @@ import { DayView } from "../../src/components/calendar-views/DayView";
 import { ScheduleView } from "../../src/components/calendar-views/ScheduleView";
 import { MultiDayView } from "../../src/components/calendar-views/MultiDayView";
 import { haptic } from "../../src/lib/haptics";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, addDays, subDays, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths } from "date-fns";
 
 interface CalendarEvent {
   id: string; title: string; description: string | null; start_time: string; end_time: string;
   color: string; location: string | null; meeting_url: string | null; source: string;
-  recurrence_rule?: any;
+  recurrence_rule?: unknown;
 }
 
 export default function CalendarScreen() {
@@ -56,7 +56,6 @@ export default function CalendarScreen() {
     }
   }, [selectedDate]);
 
-  useEffect(() => { loadEvents(); }, [loadEvents]);
   useFocusEffect(useCallback(() => { loadEvents(); }, [loadEvents]));
 
   function openEdit(event: CalendarEvent) {

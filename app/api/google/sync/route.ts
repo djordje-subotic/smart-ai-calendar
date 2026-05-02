@@ -77,8 +77,9 @@ export async function POST() {
     }
 
     return NextResponse.json({ imported, total: googleEvents.length });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Sync error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Sync failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -21,8 +21,8 @@ export default function TodayPage() {
   const todayEvents = events.filter((e) => isToday(parseISO(e.start_time)));
 
   useEffect(() => {
-    setSelectedDate(today);
-  }, []);
+    setSelectedDate(new Date());
+  }, [setSelectedDate]);
 
   return (
     <div className="flex h-full flex-col">
