@@ -10,7 +10,7 @@ import {
   Search, ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserProfile, saveUserProfile, uploadAvatar, type UserProfile } from "@/src/actions/profile";
+import { getUserProfile, saveUserProfile, uploadAvatar } from "@/src/actions/profile";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

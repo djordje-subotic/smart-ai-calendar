@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, PanResponder, Animated } from "react-native";
 import { colors } from "../../constants/colors";
 import { format, isSameDay } from "date-fns";
@@ -103,23 +103,28 @@ function DraggableEvent({
   event: DayEvent; top: number; height: number;
   onPress: () => void; onLongPress: () => void; onDragEnd: (newTop: number) => void; isDragging: boolean;
 }) {
-  const pan = useRef(new Animated.Value(0)).current;
+  const [pan] = useState(() => new Animated.Value(0));
   const [active, setActive] = useState(false);
   const latestTop = useRef(top);
+  // Keep the latest closures available to the long-lived PanResponder.
+  const stateRef = useRef({ active, top, onDragEnd });
+  useEffect(() => {
+    stateRef.current = { active, top, onDragEnd };
+  }, [active, top, onDragEnd]);
 
-  const panResponder = useRef(
+  const [panResponder] = useState(() =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: () => active,
+      onMoveShouldSetPanResponder: () => stateRef.current.active,
       onPanResponderGrant: () => {
         pan.setValue(0);
       },
       onPanResponderMove: (_, gesture) => {
         pan.setValue(gesture.dy);
-        latestTop.current = top + gesture.dy;
+        latestTop.current = stateRef.current.top + gesture.dy;
       },
       onPanResponderRelease: () => {
-        onDragEnd(latestTop.current);
+        stateRef.current.onDragEnd(latestTop.current);
         setActive(false);
         pan.setValue(0);
         haptic.success();
@@ -129,7 +134,7 @@ function DraggableEvent({
         pan.setValue(0);
       },
     })
-  ).current;
+  );
 
   return (
     <Animated.View

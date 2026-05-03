@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../src/stores/authStore";
 import { router } from "expo-router";
 import { colors } from "../../src/constants/colors";
 import { KrownaLogo } from "../../src/components/KrownaLogo";
-
-const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -102,7 +100,7 @@ export default function LoginScreen() {
 
           {/* Footer */}
           <View style={s.footer}>
-            <Text style={s.footerText}>Don't have an account? </Text>
+            <Text style={s.footerText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
               <Text style={s.footerLink}>Create one free →</Text>
             </TouchableOpacity>

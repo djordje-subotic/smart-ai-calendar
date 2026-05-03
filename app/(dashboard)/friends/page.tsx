@@ -5,7 +5,7 @@ import { getFriends, getPendingRequests, sendFriendRequest, respondToFriendReque
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, UserPlus, Check, X, MapPin, Briefcase, Cake, ArrowLeft, Search, Quote, User } from "lucide-react";
+import { Users, UserPlus, Check, X, MapPin, Briefcase, Cake, ArrowLeft, Search, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

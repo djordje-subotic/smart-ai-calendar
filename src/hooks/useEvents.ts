@@ -14,8 +14,6 @@ import {
   startOfWeek,
   endOfWeek,
   format,
-  subDays,
-  addDays,
 } from "date-fns";
 
 export function useEvents(date: Date) {

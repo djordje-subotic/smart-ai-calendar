@@ -9,7 +9,6 @@ import { DayView } from "@/src/components/calendar/DayView";
 import { EventModal } from "@/src/components/calendar/EventModal";
 import { AIInputBar } from "@/src/components/ai/AIInputBar";
 import { OptimizePanel } from "@/src/components/ai/OptimizePanel";
-import { Task } from "@/src/types/task";
 
 export default function CalendarPage() {
   const { selectedDate, view } = useCalendarStore();

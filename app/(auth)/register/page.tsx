@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "@/src/components/layout/Logo";
-import { Loader2, Crown, Check, ArrowRight, Sparkles, Calendar, Target, Mic } from "lucide-react";
+import { Loader2, Crown, Check, Sparkles, Calendar, Target, Mic } from "lucide-react";
 import { motion } from "framer-motion";
 
 const benefits = [

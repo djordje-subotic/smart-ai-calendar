@@ -297,7 +297,27 @@ export async function respondToInvite(inviteId: string, action: "accept" | "decl
   return { success: false, error: "Invalid action" };
 }
 
-export async function getMyInvites(): Promise<any[]> {
+export interface InviteWithMeta {
+  id: string;
+  organizer_id: string;
+  invitee_id: string;
+  proposed_title: string;
+  proposed_description: string | null;
+  proposed_location: string | null;
+  proposed_start: string;
+  proposed_end: string;
+  status: "pending" | "negotiating" | "accepted" | "declined" | "cancelled";
+  counter_message: string | null;
+  counter_start: string | null;
+  counter_end: string | null;
+  created_at: string;
+  otherName: string;
+  otherTimezone: string;
+  myTimezone: string;
+  isOrganizer: boolean;
+}
+
+export async function getMyInvites(): Promise<InviteWithMeta[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -313,7 +333,7 @@ export async function getMyInvites(): Promise<any[]> {
 
   // Enrich with names and timezone
   const { data: myProfile } = await supabase.from("profiles").select("timezone").eq("id", user.id).single();
-  const enriched = [];
+  const enriched: InviteWithMeta[] = [];
   for (const inv of data) {
     const otherId = inv.organizer_id === user.id ? inv.invitee_id : inv.organizer_id;
     const { data: profile } = await supabase.from("profiles").select("full_name, timezone").eq("id", otherId).single();

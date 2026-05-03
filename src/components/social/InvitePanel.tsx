@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getMyInvites, respondToInvite } from "@/src/actions/social";
+import { useCallback, useEffect, useState } from "react";
+import { getMyInvites, respondToInvite, type InviteWithMeta } from "@/src/actions/social";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Clock, ArrowRight, MessageSquare, Globe } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Check, X, Clock, MessageSquare, Globe } from "lucide-react";
+import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 
 export function InvitePanel() {
-  const [invites, setInvites] = useState<any[]>([]);
+  const [invites, setInvites] = useState<InviteWithMeta[]>([]);
   const [counterTime, setCounterTime] = useState<Record<string, string>>({});
   const [counterMsg, setCounterMsg] = useState<Record<string, string>>({});
   const [showCounter, setShowCounter] = useState<string | null>(null);
+
+  const loadInvites = useCallback(async () => {
+    const data = await getMyInvites();
+    setInvites(data);
+  }, []);
 
   useEffect(() => {
     loadInvites();
     const interval = setInterval(loadInvites, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  async function loadInvites() {
-    const data = await getMyInvites();
-    setInvites(data);
-  }
+  }, [loadInvites]);
 
   async function handleAccept(inviteId: string) {
     await respondToInvite(inviteId, "accept");

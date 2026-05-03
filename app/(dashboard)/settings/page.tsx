@@ -9,7 +9,7 @@ import { getGoogleAuthUrl, getGoogleSyncStatus, disconnectGoogle } from "@/src/a
 import { sendFriendRequest, getFriends, getPendingRequests, respondToFriendRequest } from "@/src/actions/social";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, Zap, Crown, Shield, Check, RefreshCw, Unlink, UserPlus, Users, X, Volume2, VolumeX, Coins } from "lucide-react";
+import { LogOut, Zap, Crown, Shield, Check, RefreshCw, Unlink, UserPlus, Users, X, Volume2, VolumeX } from "lucide-react";
 import { getBonusCredits } from "@/src/actions/credits";
 import { CreditPurchase } from "@/src/components/ai/CreditPurchase";
 import { NotificationSettings } from "@/src/components/NotificationSettings";

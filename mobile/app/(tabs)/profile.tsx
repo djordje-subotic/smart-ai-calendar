@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,7 +6,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import { colors } from "../../src/constants/colors";
-import { AvatarPicker, getDiceBearUrl, parseAvatarPreset } from "../../src/components/AvatarPicker";
+import { AvatarPicker, getDiceBearUrl } from "../../src/components/AvatarPicker";
 import { format } from "date-fns";
 
 const GOALS = ["Stay fit", "Learn new skills", "Read more", "Be productive", "Work-life balance", "Side project", "Eat healthier", "Save money"];
@@ -43,9 +43,7 @@ export default function ProfileScreen() {
   const [constraints, setConstraints] = useState<string[]>([]);
   const [idealDay, setIdealDay] = useState("");
 
-  useEffect(() => { load(); }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
@@ -66,7 +64,9 @@ export default function ProfileScreen() {
       setIdealDay(data.ideal_day || "");
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   function toggle(list: string[], setList: (v: string[]) => void, item: string) {
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
@@ -164,7 +164,7 @@ export default function ProfileScreen() {
         {/* AI Personalization */}
         <SectionTitle>AI Personalization</SectionTitle>
 
-        <Label>Krowna's personality</Label>
+        <Label>Krowna&apos;s personality</Label>
         <View style={s.motivationGrid}>
           {MOTIVATION_STYLES.map((style) => (
             <TouchableOpacity

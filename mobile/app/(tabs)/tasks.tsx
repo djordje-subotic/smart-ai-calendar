@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabase";
@@ -22,9 +22,7 @@ export default function TasksScreen() {
   const [newTask, setNewTask] = useState("");
   const [showAdd, setShowAdd] = useState(false);
 
-  useEffect(() => { loadTasks(); }, []);
-
-  async function loadTasks() {
+  const loadTasks = useCallback(async () => {
     const cached = await getCached<Task[]>("tasks:open");
     if (cached) setTasks(cached);
     try {
@@ -35,7 +33,9 @@ export default function TasksScreen() {
     } catch {
       // Offline — keep cached
     }
-  }
+  }, []);
+
+  useEffect(() => { loadTasks(); }, [loadTasks]);
 
   async function handleAdd() {
     if (!newTask.trim()) return;
