@@ -2,80 +2,80 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("AI Server Actions - Structure", () => {
   it("should export all required functions from ai.ts", async () => {
-    const module = await import("@/src/actions/ai");
-    expect(module.chatWithAI).toBeDefined();
-    expect(module.parseEventPrompt).toBeDefined();
-    expect(module.generateDailyBriefing).toBeDefined();
-    expect(module.getUsageStats).toBeDefined();
-    expect(module.optimizeSchedule).toBeDefined();
-    expect(module.replanDay).toBeDefined();
-    expect(module.executeAIActions).toBeDefined();
-    expect(module.generateWeeklyReport).toBeDefined();
-    expect(module.generateMeetingPrep).toBeDefined();
-    expect(module.applyTemplate).toBeDefined();
-    expect(module.getCalendarHeatmap).toBeDefined();
-    expect(module.startFocusSession).toBeDefined();
+    const mod = await import("@/src/actions/ai");
+    expect(mod.chatWithAI).toBeDefined();
+    expect(mod.parseEventPrompt).toBeDefined();
+    expect(mod.generateDailyBriefing).toBeDefined();
+    expect(mod.getUsageStats).toBeDefined();
+    expect(mod.optimizeSchedule).toBeDefined();
+    expect(mod.replanDay).toBeDefined();
+    expect(mod.executeAIActions).toBeDefined();
+    expect(mod.generateWeeklyReport).toBeDefined();
+    expect(mod.generateMeetingPrep).toBeDefined();
+    expect(mod.applyTemplate).toBeDefined();
+    expect(mod.getCalendarHeatmap).toBeDefined();
+    expect(mod.startFocusSession).toBeDefined();
   });
 
   it("chatWithAI should accept voiceMode parameter", async () => {
-    const module = await import("@/src/actions/ai");
+    const mod = await import("@/src/actions/ai");
     // Verify the function signature accepts 3 params
-    expect(module.chatWithAI.length).toBeGreaterThanOrEqual(1);
+    expect(mod.chatWithAI.length).toBeGreaterThanOrEqual(1);
   });
 });
 
 describe("Event Actions - Structure", () => {
   it("should export all CRUD functions", async () => {
-    const module = await import("@/src/actions/events");
-    expect(module.getEvents).toBeDefined();
-    expect(module.createEvent).toBeDefined();
-    expect(module.updateEvent).toBeDefined();
-    expect(module.deleteEvent).toBeDefined();
+    const mod = await import("@/src/actions/events");
+    expect(mod.getEvents).toBeDefined();
+    expect(mod.createEvent).toBeDefined();
+    expect(mod.updateEvent).toBeDefined();
+    expect(mod.deleteEvent).toBeDefined();
   });
 });
 
 describe("Profile Actions - Structure", () => {
   it("should export all profile functions", async () => {
-    const module = await import("@/src/actions/profile");
-    expect(module.getUserProfile).toBeDefined();
-    expect(module.saveUserProfile).toBeDefined();
-    expect(module.uploadAvatar).toBeDefined();
+    const mod = await import("@/src/actions/profile");
+    expect(mod.getUserProfile).toBeDefined();
+    expect(mod.saveUserProfile).toBeDefined();
+    expect(mod.uploadAvatar).toBeDefined();
   });
 });
 
 describe("Social Actions - Structure", () => {
   it("should export all social functions", async () => {
-    const module = await import("@/src/actions/social");
-    expect(module.sendFriendRequest).toBeDefined();
-    expect(module.getFriends).toBeDefined();
-    expect(module.getPendingRequests).toBeDefined();
-    expect(module.respondToFriendRequest).toBeDefined();
-    expect(module.createEventInvite).toBeDefined();
-    expect(module.respondToInvite).toBeDefined();
-    expect(module.getMyInvites).toBeDefined();
-    expect(module.getNotifications).toBeDefined();
-    expect(module.markNotificationRead).toBeDefined();
-    expect(module.getUnreadCount).toBeDefined();
-    expect(module.findMutualFreeTime).toBeDefined();
+    const mod = await import("@/src/actions/social");
+    expect(mod.sendFriendRequest).toBeDefined();
+    expect(mod.getFriends).toBeDefined();
+    expect(mod.getPendingRequests).toBeDefined();
+    expect(mod.respondToFriendRequest).toBeDefined();
+    expect(mod.createEventInvite).toBeDefined();
+    expect(mod.respondToInvite).toBeDefined();
+    expect(mod.getMyInvites).toBeDefined();
+    expect(mod.getNotifications).toBeDefined();
+    expect(mod.markNotificationRead).toBeDefined();
+    expect(mod.getUnreadCount).toBeDefined();
+    expect(mod.findMutualFreeTime).toBeDefined();
   });
 });
 
 describe("Credits Actions - Structure", () => {
   it("should export all credit functions", async () => {
-    const module = await import("@/src/actions/credits");
-    expect(module.getBonusCredits).toBeDefined();
-    expect(module.purchaseCredits).toBeDefined();
-    expect(module.getPurchaseHistory).toBeDefined();
+    const mod = await import("@/src/actions/credits");
+    expect(mod.getBonusCredits).toBeDefined();
+    expect(mod.purchaseCredits).toBeDefined();
+    expect(mod.getPurchaseHistory).toBeDefined();
   });
 });
 
 describe("Google Calendar Actions - Structure", () => {
   it("should export Google Calendar functions", async () => {
-    const module = await import("@/src/actions/google-calendar");
-    expect(module.getGoogleAuthUrl).toBeDefined();
-    expect(module.getGoogleSyncStatus).toBeDefined();
-    expect(module.disconnectGoogle).toBeDefined();
-    expect(module.generateMeetLink).toBeDefined();
+    const mod = await import("@/src/actions/google-calendar");
+    expect(mod.getGoogleAuthUrl).toBeDefined();
+    expect(mod.getGoogleSyncStatus).toBeDefined();
+    expect(mod.disconnectGoogle).toBeDefined();
+    expect(mod.generateMeetLink).toBeDefined();
   });
 });
 

@@ -45,9 +45,13 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
   if (!link) notFound();
 
   // Pull host's busy windows for the availability horizon. Only start/end
-  // times are exposed — never titles or notes.
-  const horizonEnd = new Date(Date.now() + (link.days_ahead + 1) * 24 * 60 * 60 * 1000).toISOString();
-  const now = new Date().toISOString();
+  // times are exposed — never titles or notes. This is a server component
+  // (async function) — each render is a new request, so reading the current
+  // time here is safe and required.
+  // eslint-disable-next-line react-hooks/purity
+  const renderedAt = Date.now();
+  const horizonEnd = new Date(renderedAt + (link.days_ahead + 1) * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date(renderedAt).toISOString();
 
   // We need a service-role read for busy times (event rows are not public).
   // Fall back to empty if service role isn't configured — slots still render,

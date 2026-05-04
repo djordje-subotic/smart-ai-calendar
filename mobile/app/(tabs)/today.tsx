@@ -64,7 +64,13 @@ export default function TodayScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { loadToday(); }, [loadToday]));
-  useEffect(() => { loadToday(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!cancelled) await loadToday();
+    })();
+    return () => { cancelled = true; };
+  }, [loadToday]);
 
   const now = new Date();
   const upcoming = events.filter((e) => new Date(e.start_time) > now);

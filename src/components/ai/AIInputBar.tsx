@@ -208,7 +208,7 @@ export function AIInputBar({ events }: AIInputBarProps) {
                 <Crown className="h-5 w-5 text-primary-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold">You've hit your AI limit</p>
+                <p className="text-sm font-semibold">You&apos;ve hit your AI limit</p>
                 <p className="text-[11px] text-muted-foreground">Upgrade to Pro for 300 requests/mo, or Ultra for unlimited.</p>
               </div>
               <div className="flex gap-2">

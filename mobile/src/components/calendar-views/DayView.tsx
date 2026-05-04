@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, PanResponder, Animated } from "react-native";
 import { colors } from "../../constants/colors";
 import { format, isSameDay } from "date-fns";
@@ -103,33 +103,42 @@ function DraggableEvent({
   event: DayEvent; top: number; height: number;
   onPress: () => void; onLongPress: () => void; onDragEnd: (newTop: number) => void; isDragging: boolean;
 }) {
-  const pan = useRef(new Animated.Value(0)).current;
+  const [pan] = useState(() => new Animated.Value(0));
   const [active, setActive] = useState(false);
   const latestTop = useRef(top);
+  const stateRef = useRef({ active: false, onDragEnd, top });
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: () => active,
-      onPanResponderGrant: () => {
-        pan.setValue(0);
-      },
-      onPanResponderMove: (_, gesture) => {
-        pan.setValue(gesture.dy);
-        latestTop.current = top + gesture.dy;
-      },
-      onPanResponderRelease: () => {
-        onDragEnd(latestTop.current);
-        setActive(false);
-        pan.setValue(0);
-        haptic.success();
-      },
-      onPanResponderTerminate: () => {
-        setActive(false);
-        pan.setValue(0);
-      },
-    })
-  ).current;
+  useEffect(() => {
+    stateRef.current.active = active;
+    stateRef.current.onDragEnd = onDragEnd;
+    stateRef.current.top = top;
+  }, [active, onDragEnd, top]);
+
+  // PanResponder is created once but its callbacks read the latest state via
+  // stateRef, which is only mutated in effects and read in gesture handlers
+  // (never during render). The rule cannot statically prove this, so disable.
+  // eslint-disable-next-line react-hooks/refs
+  const [panResponder] = useState(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: () => stateRef.current.active,
+    onPanResponderGrant: () => {
+      pan.setValue(0);
+    },
+    onPanResponderMove: (_, gesture) => {
+      pan.setValue(gesture.dy);
+      latestTop.current = stateRef.current.top + gesture.dy;
+    },
+    onPanResponderRelease: () => {
+      stateRef.current.onDragEnd(latestTop.current);
+      setActive(false);
+      pan.setValue(0);
+      haptic.success();
+    },
+    onPanResponderTerminate: () => {
+      setActive(false);
+      pan.setValue(0);
+    },
+  }));
 
   return (
     <Animated.View

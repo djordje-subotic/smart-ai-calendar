@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabase";
@@ -22,9 +22,7 @@ export default function TasksScreen() {
   const [newTask, setNewTask] = useState("");
   const [showAdd, setShowAdd] = useState(false);
 
-  useEffect(() => { loadTasks(); }, []);
-
-  async function loadTasks() {
+  const loadTasks = useCallback(async () => {
     const cached = await getCached<Task[]>("tasks:open");
     if (cached) setTasks(cached);
     try {
@@ -35,7 +33,26 @@ export default function TasksScreen() {
     } catch {
       // Offline — keep cached
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const cached = await getCached<Task[]>("tasks:open");
+      if (cancelled) return;
+      if (cached) setTasks(cached);
+      try {
+        const { data } = await supabase.from("tasks").select("*").neq("status", "done").order("due_date");
+        if (cancelled) return;
+        const fresh = data || [];
+        setTasks(fresh);
+        await setCached("tasks:open", fresh, { ttl: 6 * 60 * 60 * 1000 });
+      } catch {
+        // Offline — keep cached
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleAdd() {
     if (!newTask.trim()) return;

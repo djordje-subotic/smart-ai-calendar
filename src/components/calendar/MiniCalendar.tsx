@@ -23,7 +23,11 @@ export function MiniCalendar() {
   const [mounted, setMounted] = useState(false);
   const days = getMonthDays(displayMonth);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) setMounted(true); });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="select-none">

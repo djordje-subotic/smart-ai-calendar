@@ -16,7 +16,7 @@ import {
 } from "@/src/lib/calendar/utils";
 import { EventCard } from "./EventCard";
 import { TaskCardInline } from "@/src/components/tasks/TaskCardInline";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, CheckSquare } from "lucide-react";
 
@@ -128,48 +128,47 @@ export function DayView({ events, tasks = [] }: DayViewProps) {
     setDragging({ eventId, startY: e.clientY, origTop, currentTop: origTop });
   }
 
-  const handleDragMove = useCallback((e: MouseEvent) => {
-    if (!dragging) return;
-    const dy = e.clientY - dragging.startY;
-    const newTop = Math.max(0, dragging.origTop + dy);
-    // Snap to 15-minute grid
-    const snapped = Math.round(newTop / (HOUR_HEIGHT / 4)) * (HOUR_HEIGHT / 4);
-    setDragging((d) => d ? { ...d, currentTop: snapped } : null);
-  }, [dragging]);
-
-  const handleDragEnd = useCallback(async () => {
-    if (!dragging) return;
-    const { eventId, currentTop } = dragging;
-    const event = dayEvents.find((e) => e.id === eventId);
-    setDragging(null);
-
-    if (!event) return;
-
-    const { hour, minutes } = pixelToTime(currentTop);
-    const oldStart = parseISO(event.start_time);
-    const duration = parseISO(event.end_time).getTime() - oldStart.getTime();
-
-    const newStart = createDateAtTime(selectedDate, hour, minutes);
-    const newEnd = new Date(newStart.getTime() + duration);
-
-    if (newStart.getTime() !== oldStart.getTime()) {
-      await updateEvent.mutateAsync({
-        id: eventId,
-        updates: { start_time: newStart.toISOString(), end_time: newEnd.toISOString() },
-      });
-    }
-  }, [dragging, dayEvents, selectedDate, updateEvent]);
-
   useEffect(() => {
-    if (dragging) {
-      window.addEventListener("mousemove", handleDragMove);
-      window.addEventListener("mouseup", handleDragEnd);
-      return () => {
-        window.removeEventListener("mousemove", handleDragMove);
-        window.removeEventListener("mouseup", handleDragEnd);
-      };
+    if (!dragging) return;
+
+    function handleDragMove(e: MouseEvent) {
+      if (!dragging) return;
+      const dy = e.clientY - dragging.startY;
+      const newTop = Math.max(0, dragging.origTop + dy);
+      const snapped = Math.round(newTop / (HOUR_HEIGHT / 4)) * (HOUR_HEIGHT / 4);
+      setDragging((d) => d ? { ...d, currentTop: snapped } : null);
     }
-  }, [dragging, handleDragMove, handleDragEnd]);
+
+    async function handleDragEnd() {
+      if (!dragging) return;
+      const { eventId, currentTop } = dragging;
+      const event = dayEvents.find((e) => e.id === eventId);
+      setDragging(null);
+
+      if (!event) return;
+
+      const { hour, minutes } = pixelToTime(currentTop);
+      const oldStart = parseISO(event.start_time);
+      const duration = parseISO(event.end_time).getTime() - oldStart.getTime();
+
+      const newStart = createDateAtTime(selectedDate, hour, minutes);
+      const newEnd = new Date(newStart.getTime() + duration);
+
+      if (newStart.getTime() !== oldStart.getTime()) {
+        await updateEvent.mutateAsync({
+          id: eventId,
+          updates: { start_time: newStart.toISOString(), end_time: newEnd.toISOString() },
+        });
+      }
+    }
+
+    window.addEventListener("mousemove", handleDragMove);
+    window.addEventListener("mouseup", handleDragEnd);
+    return () => {
+      window.removeEventListener("mousemove", handleDragMove);
+      window.removeEventListener("mouseup", handleDragEnd);
+    };
+  }, [dragging, dayEvents, selectedDate, updateEvent]);
 
   // --- Click-to-create handlers ---
   function handleSlotMouseDown(e: React.MouseEvent) {

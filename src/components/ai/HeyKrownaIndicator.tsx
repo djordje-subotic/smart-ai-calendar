@@ -19,21 +19,30 @@ export function HeyKrownaIndicator() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setMounted(true);
-    // Load voice preference from DB, fallback to localStorage
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    let cancelled = false;
+    (async () => {
+      if (cancelled) return;
+      setMounted(true);
+      // Load voice preference from DB, fallback to localStorage
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
       if (user) {
-        supabase.from("profiles").select("voice_enabled").eq("id", user.id).single().then(({ data }) => {
-          const voiceOn = data?.voice_enabled || false;
-          setEnabled(voiceOn);
-          localStorage.setItem("krowna-hey-mode", String(voiceOn));
-        });
+        const { data } = await supabase
+          .from("profiles")
+          .select("voice_enabled")
+          .eq("id", user.id)
+          .single();
+        if (cancelled) return;
+        const voiceOn = data?.voice_enabled || false;
+        setEnabled(voiceOn);
+        localStorage.setItem("krowna-hey-mode", String(voiceOn));
       } else {
         const stored = migrateLocalStorageKey("krowna-hey-mode", "krowna-hey-mode");
         setEnabled(stored === "true");
       }
-    });
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const handleCommand = useCallback(async (command: string): Promise<string> => {

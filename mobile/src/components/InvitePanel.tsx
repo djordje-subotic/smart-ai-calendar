@@ -60,9 +60,15 @@ export function InvitePanel() {
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    (async () => {
+      if (!cancelled) await load();
+    })();
     const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [load]);
 
   async function handleAccept(inv: Invite) {

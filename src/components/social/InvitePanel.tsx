@@ -1,29 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getMyInvites, respondToInvite } from "@/src/actions/social";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Clock, ArrowRight, MessageSquare, Globe } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Check, X, Clock, MessageSquare, Globe } from "lucide-react";
+import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 
+type Invite = {
+  id: string;
+  proposed_title: string;
+  proposed_start: string;
+  proposed_end: string;
+  proposed_location?: string | null;
+  status: string;
+  counter_message?: string | null;
+  organizer_id: string;
+  invitee_id: string;
+  isOrganizer: boolean;
+  otherName: string;
+  otherTimezone: string;
+  myTimezone: string;
+};
+
 export function InvitePanel() {
-  const [invites, setInvites] = useState<any[]>([]);
+  const [invites, setInvites] = useState<Invite[]>([]);
   const [counterTime, setCounterTime] = useState<Record<string, string>>({});
   const [counterMsg, setCounterMsg] = useState<Record<string, string>>({});
   const [showCounter, setShowCounter] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadInvites();
-    const interval = setInterval(loadInvites, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  async function loadInvites() {
+  const loadInvites = useCallback(async () => {
     const data = await getMyInvites();
     setInvites(data);
-  }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const data = await getMyInvites();
+      if (!cancelled) setInvites(data);
+    })();
+    const interval = setInterval(loadInvites, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [loadInvites]);
 
   async function handleAccept(inviteId: string) {
     await respondToInvite(inviteId, "accept");

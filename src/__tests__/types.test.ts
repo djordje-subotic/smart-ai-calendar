@@ -3,13 +3,13 @@ import { describe, it, expect } from "vitest";
 describe("Event Types", () => {
   it("CalendarEvent should include meeting_url field", async () => {
     // Verify the type module exports correctly
-    const module = await import("@/src/types/event");
-    expect(module).toBeDefined();
+    const mod = await import("@/src/types/event");
+    expect(mod).toBeDefined();
   });
 
   it("AI types should include AIAction", async () => {
-    const module = await import("@/src/types/ai");
-    expect(module).toBeDefined();
+    const mod = await import("@/src/types/ai");
+    expect(mod).toBeDefined();
   });
 });
 
@@ -32,9 +32,9 @@ describe("Color Constants", () => {
 describe("Profile Types", () => {
   it("UserProfile interface should be importable", async () => {
     // This tests that the module compiles and exports correctly
-    const module = await import("@/src/actions/profile");
-    expect(module.getUserProfile).toBeDefined();
-    expect(module.saveUserProfile).toBeDefined();
-    expect(module.uploadAvatar).toBeDefined();
+    const mod = await import("@/src/actions/profile");
+    expect(mod.getUserProfile).toBeDefined();
+    expect(mod.saveUserProfile).toBeDefined();
+    expect(mod.uploadAvatar).toBeDefined();
   });
 });

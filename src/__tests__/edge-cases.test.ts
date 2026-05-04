@@ -148,9 +148,9 @@ describe("Edge Cases - Security", () => {
     expect(inputBar).not.toContain("sk-ant-");
   });
 
-  it("auth middleware should protect dashboard routes", () => {
-    const middleware = readFile("middleware.ts");
-    expect(middleware).toContain("updateSession");
+  it("auth proxy should protect dashboard routes", () => {
+    const proxy = readFile("proxy.ts");
+    expect(proxy).toContain("updateSession");
   });
 
   it("server actions should check authentication", () => {

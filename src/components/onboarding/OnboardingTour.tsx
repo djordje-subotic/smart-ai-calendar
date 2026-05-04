@@ -44,32 +44,33 @@ export function OnboardingTour() {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    checkFirstTime();
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (cancelled || !user) return;
+
+        const seen = localStorage.getItem(`krowna-onboarding-${user.id}`);
+        if (seen) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("created_at, onboarding_completed")
+          .eq("id", user.id)
+          .single();
+
+        if (cancelled) return;
+        // Show onboarding to new users (created < 10 min ago) who haven't completed it
+        if (profile && !profile.onboarding_completed) {
+          const created = new Date(profile.created_at).getTime();
+          const isNew = Date.now() - created < 10 * 60 * 1000;
+          if (isNew) setOpen(true);
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  async function checkFirstTime() {
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const seen = localStorage.getItem(`krowna-onboarding-${user.id}`);
-      if (seen) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("created_at, onboarding_completed")
-        .eq("id", user.id)
-        .single();
-
-      // Show onboarding to new users (created < 10 min ago) who haven't completed it
-      if (profile && !profile.onboarding_completed) {
-        const created = new Date(profile.created_at).getTime();
-        const isNew = Date.now() - created < 10 * 60 * 1000;
-        if (isNew) setOpen(true);
-      }
-    } catch {}
-  }
 
   async function handleFinish() {
     try {

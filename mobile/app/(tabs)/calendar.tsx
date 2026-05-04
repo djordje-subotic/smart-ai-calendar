@@ -56,7 +56,13 @@ export default function CalendarScreen() {
     }
   }, [selectedDate]);
 
-  useEffect(() => { loadEvents(); }, [loadEvents]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!cancelled) await loadEvents();
+    })();
+    return () => { cancelled = true; };
+  }, [loadEvents]);
   useFocusEffect(useCallback(() => { loadEvents(); }, [loadEvents]));
 
   function openEdit(event: CalendarEvent) {

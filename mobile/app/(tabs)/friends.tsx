@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,9 +40,7 @@ export default function FriendsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => { load(); }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data: friendships } = await supabase.from("friends")
@@ -69,7 +67,15 @@ export default function FriendsScreen() {
     }
     setFriends(enriched);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!cancelled) await load();
+    })();
+    return () => { cancelled = true; };
+  }, [load]);
 
   async function handleAdd() {
     if (!email.trim()) return;
@@ -189,7 +195,7 @@ export default function FriendsScreen() {
                   {item.city && <Text style={s.metaText}>📍 {item.city}</Text>}
                   {item.date_of_birth && <Text style={s.metaText}>🎂 {format(new Date(item.date_of_birth), "MMM d")}</Text>}
                 </View>
-                {item.motto && <Text style={s.motto}>"{item.motto}"</Text>}
+                {item.motto && <Text style={s.motto}>{`"${item.motto}"`}</Text>}
               </View>
             </View>
           );
